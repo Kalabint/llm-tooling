@@ -38,4 +38,4 @@ Feel free to ask if you have any questions or need further clarification on any 
 ## Repository Contents
 
 - README.md: This document, providing an overview and usage instructions for ChatGPT.
-- chatgpt_universal_primer.txt: The source file for the universal primer.
+- chatgpt_universal_primer.txt: The source file for the universal primer. [Link](https://github.com/Kalabint/ChatGPT-Primer/blob/main/chatgpt_universal_primer.txt)
