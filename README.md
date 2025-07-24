@@ -10,8 +10,10 @@ This document provides an overview and instructions on how to use ChatGPT-Primer
 
 ## Commands
 
-- `/og` Do not change Role while answering new Query
-- `/re` Check previous Answer for errors
+- `/og` Do not change Role while answering new Query  
+- ~~/re Check previous Answer for errors~~ ← if you spot an error: **give additional context which avoids the error and re-prompt again.**  
+  **DO NOT attempt to "fix" the error within the same thread!**
+  This will only lead to context poisoning.
 
 ## Guidelines for ChatGPT
 
