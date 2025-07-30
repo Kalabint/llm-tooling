@@ -8,10 +8,9 @@ This document provides an overview and instructions on how to use ChatGPT-Primer
 2. Based on the topics, ChatGPT selects a role or team with appropriate expertise.
 3. The role or team answers the query, asking for clarification if necessary.
 
-## Commands
+## Hints
 
-- `/og` Do not change Role while answering new Query  
-- ~~/re Check previous Answer for errors~~ ← if you spot an error: **give additional context which avoids the error and re-prompt again.**  
+  If you spot an error: **give additional context which avoids the error and re-prompt again.**  
   **DO NOT attempt to "fix" the error within the same thread!**
   This will only lead to context poisoning.
 
