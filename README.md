@@ -27,16 +27,7 @@ The Machine will forget. It's on the harness to work around this.
 Rules collected over my work with cc and constantly getting reminded that llms like to
 acknowledge things while changing absolutely nothing.
 
-Things that are broken and not fixed yet:
-
-- Two rules fall out of the report when they fire alongside anything else: the one about
-  comparing two sources, and the one about asserting what a setting does.
-- The `memory-audit` timer reads one path and writes another, so it never stops nagging.
-- Only the first draft gets scanned. The rewrite is not checked.
-- Quoting someone who used a banned word trips the guard.
-- Code fences give up at a fence inside a fence, so code examples can trip it too.
-
-No test corpus. No `plugin.json` — install is manual, into two different places.
+Install is manual, into two different places. See the hooks README.
 
 ## Example
 
