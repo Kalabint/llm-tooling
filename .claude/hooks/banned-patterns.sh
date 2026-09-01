@@ -196,7 +196,7 @@ PNT="$PNT"'|i.?ll leave (it|that|this) (to|with) you|happy to (do|go) either|i c
 PNT="$PNT"'|((do|would) you want me to|want me to|would you like me to)[^.?!]*\?'
 PNT="$PNT"'|which (of (the|these|those) [a-z0-9-]+ )?(do|would) you (want|prefer|like)'
 PNT="$PNT"'|say the word|just say|let me know if you( |.?d )(want|like|prefer)|if you want,? i can|i can .{0,30} if you want'
-PNT="$PNT"'|if you.?d rather|say (go|if you)|say the word and|and i.?ll (run|build|do|wire|add) it'
+PNT="$PNT"'|if you.?d rather|say (go|if you( (want|need|prefer|would|think|rather|like)|.?d))|say the word and|and i.?ll (run|build|do|wire|add) it'
 
 # Class 6: invented hazard — a warning with no observed instance. What separates it
 # from a real finding is not tone but whether it can name where the thing is TRUE,
