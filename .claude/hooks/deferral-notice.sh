@@ -14,6 +14,11 @@
 # so it must not itself contain banned phrasing. The first version ended with
 # an empty-deferral phrase that banned-patterns.sh itself blocks (PNT class).
 #
+# ONE branch blocks instead of noticing: a fix priced as trivial and not applied.
+# It is gated on the last user turn being an imperative - pricing an option in
+# answer to a question is describing, not deferring, and blocking it turns a
+# question into an edit.
+#
 # Fails OPEN on any error.
 
 set -uo pipefail
@@ -31,6 +36,33 @@ text=$(jq -r '.last_assistant_message // empty' <<<"$payload" 2>/dev/null | head
 # cannot self-trip.
 t=$(sed '/^[[:space:]]*```/,/^[[:space:]]*```/d' <<<"$text" 2>/dev/null | sed 's/`[^`]*`//g')
 [ -n "${t:-}" ] || exit 0
+
+# BLOCKING branch: a fix priced as trivial, with no sign it was applied. Checked
+# before the reasoned-deferral escape, because "one command" plus a reason is a
+# rationalisation, not a reasoned deferral.
+PRICED='(fix is|it.?s|that.?s|this is) (just |only )?(one|a one|a single)[- ](character|char|line|liner|word|command|flag)|one[- ]line (change|fix|edit)|a one[- ]liner|costs? (one|a single) (line|command|character)|trivial(ly)? to fix|cheap to (fix|do|add)|would (take|be) (one|a single) (line|command|character)'
+APPLIED='\b(applied|patched|fixed it|done|committed|staged|removed|edited|rewritten|now (reads|fires|passes)|i (just )?(ran|applied|patched|changed|fixed))\b'
+priced=$(grep -ioE "$PRICED" <<<"$t" 2>/dev/null | sort -u | head -1)
+
+# SIMON SAYS. Only demand the fix when it was actually asked for. Pricing an
+# option in answer to "could this go in X?" is describing, not deferring, and
+# blocking it turns a question into an edit - which is exactly what happened on
+# 2026-09-02: this branch fired on a hypothetical and a public skill got changed
+# unasked. Read the last real user turn from the transcript and require an
+# imperative.
+asked=0
+tp=$(jq -r '.transcript_path // empty' <<<"$payload" 2>/dev/null)
+if [ -f "$tp" ]; then
+  lastu=$(tac "$tp" 2>/dev/null \
+    | jq -r 'select(.message.role=="user") | .message.content | select(type=="string")' 2>/dev/null \
+    | grep -vE '^(Stop hook feedback|<task-notification>|<system-reminder>|\[)' \
+    | head -1 | head -c 600)
+  # imperative = a bare command, an approval, or an explicit do-it
+  grep -qiE '^(do it|go|yes|yep|ok|apply|fix|add|write|make|commit|ship|run|update|change|remove|delete)\b' <<<"$lastu" 2>/dev/null && asked=1
+  grep -qiE '\b(do it|apply it|fix it|add it|make it so|go ahead|please do|just do)\b' <<<"$lastu" 2>/dev/null && asked=1
+  # a question is not an instruction, even one that names the change
+  grep -qiE '^(can|could|would|should|is|are|does|do you|possible|any |what|which|why|how)\b|\?\s*$' <<<"$lastu" 2>/dev/null && asked=0
+fi
 
 DEFER="leaving (that|it|this) (for now|aside|alone)\
 |for a later session|in a later session|next session\
