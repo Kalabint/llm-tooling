@@ -1,7 +1,5 @@
-# Shared banned-phrasing patterns. Sourced by:
+# Shared banned-phrasing patterns. Sole consumer:
 #   no-superlative-guard.sh    (Stop + PostToolUse) -> blocks, forces a re-emit
-#   redact-banned-display.sh   (MessageDisplay)     -> hides it on screen only
-# One definition so the two consumers cannot drift apart.
 #
 # Rationale for each class lives in the memory files loaded at session start
 # (feedback-no-time-estimates, feedback_no_sycophancy, ...), NOT here and NOT in
@@ -285,9 +283,6 @@ ADV="$ADV"'|\b(is|are) not (a subset|nested)\b|\bneither (is|store is) (a )?(sup
 PAR='\b[a-z][a-z0-9]*(_[a-z0-9]+)+[[:space:]]*=[[:space:]]*[0-9][0-9.]*[^.]{0,70}\b(already|applied|accounts? for|mitigat|reduc(e|es|ing)|increas(e|es|ing)|limit(s|ing)?|caps?|throttl)'
 PAR="$PAR"'|\balready (applied|enabled|in play|accounted for|active|switched on)\b'
 PAR="$PAR"'|\b(with|despite|even with)[[:space:]]+[A-Z][A-Z0-9_]{4,}[^.]{0,50}\b(applied|enabled|set|on|active)\b'
-
-# Every class, for consumers that do not need to distinguish them.
-ALL_BANNED="$CMP|$TIC|$SYC|$EFF|$PNT|$HAZ|$LED|$EDI|$ADV|$TIM|$PAR"
 
 # Strip fenced blocks and inline code before matching: quoting a banned phrase in
 # backticks (explaining this guard, a table of the patterns) is not using it.

@@ -3,7 +3,7 @@
 #   Stop        -> scans the assistant's last message, forces a correction turn.
 #   PostToolUse -> scans Write/Edit content BEFORE the file is delivered/read.
 #
-# Patterns live in banned-patterns.sh, shared with redact-banned-display.sh.
+# Patterns live in banned-patterns.sh; this is their only consumer.
 # Reasons are TERSE ON PURPOSE: the block text is injected into context on every
 # single hit (~147 tokens each before this was cut, ~885 over one session), and
 # the rationale is already in the memory files loaded at session start.
