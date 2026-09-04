@@ -11,6 +11,18 @@
 # REVERSALS — so a later pass does not re-add something that was deliberately cut.
 # Inline NOTE comments at the point of change stay too; this is the index.
 #
+# 2026-09-02  ---  DROPPED all references to redact-banned-display.sh, a second
+#                  consumer (MessageDisplay -> hide the draft on screen) that was
+#                  wired in settings once and now exists nowhere on disk. With it
+#                  went $ALL_BANNED, which had no other caller. The visible effect
+#                  of its absence: a blocked draft still reaches the terminal
+#                  before the forced re-emit.
+#
+# 2026-09-01  LED  RETIRED from the Stop guard: purely stylistic, no correctness
+#                  value, and it forced three re-emit turns in one session. The
+#                  pattern is kept below but has NO consumer now that $ALL_BANNED
+#                  is gone. Re-wire it in no-superlative-guard.sh to revive it.
+#
 # 2026-08-31  TIM  NEW CLASS: temporal self-framing — "tonight", "this evening",
 #                  "all morning". I have turns, not days; a user may write from
 #                  any timezone and resume whenever. "now" = this turn, "later" =
@@ -94,7 +106,7 @@ CMP='(more|better|stronger|faster|sharper|deeper|rarer|tighter) than (most|many|
 CMP="$CMP"'|\bthe (easiest|hardest|trickiest|riskiest|most likely|least likely|most obvious|least obvious|most dangerous) [a-z]* ?(one )?to (overlook|miss|forget|break|get wrong|catch|spot|notice|trip over)'
 
 # Class 2: stock phrases / verbal tics.
-TIC='load.bearing|\bgenuinely\b|the (honest|real|actual|true) (answer|version|truth|reading|framing|one)|worth (noting|knowing|saying|having|flagging)|(that|this|it|which) lands\b|how it lands|\bthe tell\b|cuts both ways'
+TIC='load.bearing|the (honest|real|actual|true) (answer|version|truth|reading|framing|one)|worth (noting|knowing|saying|having|flagging)|(that|this|it|which) lands\b|how it lands|\bthe tell\b|cuts both ways'
 # Ranking one item of my own list as the most striking. Adds no fact — the item's
 # content already says whether it matters — and it stacks a superlative on top of
 # an analysis the reader can rank themselves. "the sharpest (thing|point|version)"
@@ -104,6 +116,15 @@ TIC="$TIC"'|the (sharpest|clearest|starkest|ugliest|nastiest|juiciest|most telli
 # concealment was an option I declined.
 TIC="$TIC"'|(named|said|stated|flagged|reported|shown|put) rather than (glossed|glossing|buried|burying|hidden|hiding|softened|softening|sugar.?coated|sugar.?coating|downplayed|downplaying|hedged|hedging|dressed up)'
 TIC="$TIC"'|\b(to be|let me be|i.?ll be|being) (blunt|frank|honest)\b|\bfrankly\b|\bcandidly\b|no sugar.?coating|without sugar.?coating|\bnot to (sugar.?coat|bury)\b'
+# Announcing the correction before making it. Counting my own errors and narrating
+# the order I will confess them in ("two of my claims fail, and I should say so
+# before the part that holds") frames retraction as a virtue performed rather than
+# a fact reported. Banned 2026-09-03. State what is wrong; the reader can see that
+# saying so was the alternative to not saying so.
+TIC="$TIC"'|\b(one|two|three|four|both|several|most|all) of (my|the) (claims?|points?|hypothes[ei]s|assertions?|findings?|readings?)\b[^.]{0,60}\b(fail|fails|failed|are wrong|is wrong|do ?n.?t hold|did ?n.?t hold|collapse|collapsed)'
+TIC="$TIC"'|\bi should say so\b|\bbefore the part that (holds|stands|survives)\b|\bsay(ing)? so (before|first|up ?front)\b'
+TIC="$TIC"'|\b(i (have|need) to admit|i.?ll admit|admittedly|in (the interest|fairness) of|to my (credit|discredit)|credit where)\b'
+TIC="$TIC"'|\b(that|this|which) (is|was) (mine|my (error|mistake|fault))\b[^.]{0,40}\b(and|so) i\b'
 # Locating where the weight sits — a synonym for the banned weight-word. The claim
 # points at an item without measuring anything, and the sentence carries nothing itself.
 TIC="$TIC"'|(the |a )?(thing|line|part|bit|piece|one|clause|word) (that )?(doing|does|carries|carrying|bears|bearing) (most of )?the (work|weight|lifting)'
@@ -185,7 +206,7 @@ EFF="$EFF"'|\brough(ly)? estimate\b|\ba (day|week|couple of days|few hours)('"'"
 #  (c) soliciting the obvious: once options are on the page, "which do you want?"
 #      and "want me to build it?" are already in the room. He will say.
 # ALLOWED: "options: a, b, c (recommended: b)". Also allowed and NOT matched here:
-# a real disambiguation ("against the live server or the mirror?") and confirmation
+# a real disambiguation ("against traccar.example or the mirror?") and confirmation
 # before something destructive — those carry content and change what happens next.
 PNT='\byour call\b|\bup to you\b|\byou decide\b|(the|that|this) (decision|choice|call) is (yours|for you)|yours to (make|decide|call)'
 PNT="$PNT"'|whichever (you|one) (prefer|want|like)|whatever you prefer|either way works|both are (valid|fine|reasonable|good) (options|choices|approaches)'
@@ -222,7 +243,9 @@ HAZ="$HAZ"'|\b(it.?s|that.?s|which is) tempting to\b|\bdo ?n.?t be tempted\b|\bl
 HAZ="$HAZ"'|\bin case (someone|somebody|anyone|it ever|that ever)\b|\bso (that )?(nobody|no.?one|someone can.?t)\b'
 HAZ="$HAZ"'|\bfuture.?proof'
 
-# Class 7: framing preamble — announcing the KIND of statement before making it,
+# Class 7: RETIRED 2026-09-01, unreferenced since. Kept only so a revival does not
+# have to re-derive it; nothing reads $LED. Framing preamble — announcing the KIND
+# of statement before making it,
 # usually counted. The count is decoration: the reader can see how many items
 # follow, and the category word delays the content by a clause. Anchored to line
 # start (optionally through a "**217. " numbering prefix) because mid-sentence
@@ -283,6 +306,68 @@ ADV="$ADV"'|\b(is|are) not (a subset|nested)\b|\bneither (is|store is) (a )?(sup
 PAR='\b[a-z][a-z0-9]*(_[a-z0-9]+)+[[:space:]]*=[[:space:]]*[0-9][0-9.]*[^.]{0,70}\b(already|applied|accounts? for|mitigat|reduc(e|es|ing)|increas(e|es|ing)|limit(s|ing)?|caps?|throttl)'
 PAR="$PAR"'|\balready (applied|enabled|in play|accounted for|active|switched on)\b'
 PAR="$PAR"'|\b(with|despite|even with)[[:space:]]+[A-Z][A-Z0-9_]{4,}[^.]{0,50}\b(applied|enabled|set|on|active)\b'
+
+# Exemptions for Class 5. Two shapes carry content and change what happens next,
+# so blocking them is a false positive:
+#  (a) the assumption-surfacing template surface-assumptions/SKILL.md mandates,
+#      "reading this as X (say if you meant Y)". The literal string does not match
+#      PNT ("meant" is absent from the verb list), but its natural fillings do --
+#      "(say if you want the live path)", "say if you'd rather Y". The template is
+#      safe only while abstract, which is not how it is meant to be used.
+#  (b) an enumerated option list, or any message carrying a marked recommendation,
+#      which the class comment already declares allowed but the pattern cannot see.
+# Consumers apply this by clearing the PNT hit when PNT_EXEMPT also matches.
+PNT_EXEMPT='(reading|read|taking|treating) (this|that|it) as [^.]{0,80}[^a-z0-9][[:space:]]*(say|tell me) if'
+PNT_EXEMPT="$PNT_EXEMPT"'|\brecommend(ed|ation|s)?\b'
+PNT_EXEMPT="$PNT_EXEMPT"'|^[[:space:]]*([-*]|[0-9]+[.)])[[:space:]]+\S'
+
+# Class 12: declaring the fix. "The fix is to X" states a remedy as settled, which
+# assumes the diagnosis is settled too. Origin 2026-09-03: "the fix is to apply the
+# count gate after summing the sectors" was written before the mechanism had been
+# reproduced — two earlier explanations for the same symptom (the wide-fallback
+# minN=1 path, and MIN_N biased against fast traffic) had already been measured
+# false, and a third was being turned into code. A remedy proposed on an
+# unconfirmed cause is the expensive kind of wrong: it ships.
+FIXP='\bthe (fix|remedy|solution|answer) is to\b|\bthe (fix|correct|right) (form|version|shape) is\b'
+FIXP="$FIXP"'|\b(that|this|which) (would|will) fix it\b|\ball (that|it) needs is\b'
+
+# Class 13: naming a measurement instead of taking it. Listing "what I haven't
+# measured" at the end of an answer reads as rigour and costs nothing, but the
+# number was usually one query away and the reader now has to ask for it. Origin
+# 2026-09-03: closed an answer with "how many distinct OSM ways the fleet actually
+# touches in CH ... is a ST_DWithin join I haven't run" -- a single query, with both
+# tables already loaded, in a session that had run thirty like it.
+UNRUN='\b(i|we) (have ?n.?t|did ?n.?t|has ?n.?t) (yet )?(run|measured|checked|tested|computed|traced|verified)\b'
+UNRUN="$UNRUN"'|\bwhat (i|we) have ?n.?t (measured|run|checked|tested)\b|\b(that|which|this) (i|we) have ?n.?t (run|measured|checked|tested|traced)\b'
+UNRUN="$UNRUN"'|\b(still|remains?) (unmeasured|untested|unverified|unchecked)\b|\b(not|never) (yet )?measured\b'
+
+# 14. ABS -- a claim of ABSENCE (nothing uses it, unreferenced, dead) asserted
+# without a search. 2026-09-04: "a_digest_state is read by nothing in the repo,
+# 992 MB, drop it" was written into a MEMORY. It powers the /statistics/heatmap
+# brake/accel slider via h3-cells/+server.ts:287,289. The earlier grep had
+# covered future_position_stats/ only; the readers are in the webservice.
+# Absence is the one claim a partial search cannot support.
+ABS='\b(read|used|called|referenced|consumed|touched) by (nothing|no ?one|nobody|no (consumer|caller|reader|code))\b'
+ABS="$ABS"'|\bnothing (else )?(reads|uses|calls|references|consumes|touches)\b'
+ABS="$ABS"'|\b(is|are|was|were) (currently |actually )?(unused|unreferenced|never (read|used|called)|dead code)\b'
+ABS="$ABS"'|\bno (consumers?|callers?|readers?|references?|usages?) (exist|found|anywhere)\b'
+ABS="$ABS"'|\b(not|never) (read|used|called|referenced) (by )?anywhere\b'
+
+# 15. BRC -- fix-history breadcrumbs written INTO the artefact. Fixing something
+# and then burying it under a header that narrates every defect, what the old
+# version did wrong, and what a future reader must not do. 2026-09-04: walk_osm.sql
+# reached 48% comment and walk_osm_fn.sql 35%, carrying "WHY THE FIRST VERSION LOST
+# TO DEAD RECKONING", "THREE DEFECTS THIS FIXES, all measured 2026-09-03" and a
+# numbered list of superseded behaviour. None of it will be read again; the code
+# already states what it does. Verbatim: "while fixing leave BIG BREADCRUMPS OF
+# WHAT TO DO AND NOT TO DO EVERYWHERE, which you definetly will never look again".
+# Keep: what the code does, a gotcha that bites at THIS line, a param's semantics.
+# Cut: what it used to do, why the previous attempt failed, dated incident notes.
+BRC='^[[:space:]]*(--|#|\*|//)[[:space:]]*(WHY [A-Z][A-Z ]{3,}|WHAT (WENT )?(WRONG|FAILED)|[A-Z]+ DEFECTS?[A-Z ]*|HOW (IT|THIS) (BROKE|FAILED))'
+BRC="$BRC"'|\b(the|its) (old|first|previous|earlier|prior) (version|implementation|draft|attempt|rule) (did|was|had|used|failed|lost|returned)'
+BRC="$BRC"'|\b(defects?|bugs?|failures?) (this|it) (fixes|fixed|repairs|addresses)\b'
+BRC="$BRC"'|\b(all )?measured 20[0-9]{2}-[0-9]{2}-[0-9]{2}\b|\bon 20[0-9]{2}-[0-9]{2}-[0-9]{2} (a|an|the|it|this|I|we) '
+BRC="$BRC"'|\bdo NOT\b|\bDO NOT\b|\bnever (do|write|use|call|add) this\b'
 
 # Strip fenced blocks and inline code before matching: quoting a banned phrase in
 # backticks (explaining this guard, a table of the patterns) is not using it.
