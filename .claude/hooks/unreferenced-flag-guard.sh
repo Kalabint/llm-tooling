@@ -37,8 +37,8 @@ FLAG="worth (checking|verifying|a check|doing|a look)\
 |keep an eye on|bears watching"
 
 # A referent = the same bar the hazard rule sets: a file:line, a backticked
-# identifier, a measured quantity, a path, or a known table name.
-REF='[A-Za-z0-9_./-]+\.(ts|js|py|sh|sql|svelte|md|json|yml|jsonl|svelte):[0-9]+|`[^`]{3,}`|[0-9][0-9,.]*[[:space:]]*(%|[a-z]{3,})|/home/|km_[a-z_]+|tc_[a-z_]+'
+# identifier, a measured quantity, a path, or a snake_case identifier.
+REF='[A-Za-z0-9_./-]+\.(ts|js|py|sh|sql|svelte|md|json|yml|jsonl|svelte):[0-9]+|`[^`]{3,}`|[0-9][0-9,.]*[[:space:]]*(%|[a-z]{3,})|/[a-z][a-z0-9_.-]*/[a-z]|\b[a-z][a-z0-9]+_[a-z0-9_]{2,}\b'
 
 bad=""
 while IFS= read -r line; do
