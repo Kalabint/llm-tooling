@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+# Blocks a turn that ANNOUNCES the next action instead of taking it.
+#
+# 2026-09-03, session f64ee73f: asked to check six items and set a wakeup "so
+# you finish it even when the llm decides to give the lead back to me", the turn
+# ended twice on a future-tense line - "Scheduled. Next wake picks up #14" -
+# with 1527 s parked on the clock and no external dependency to wait for. The
+# user cancelled each park by hand, 75 s and 92 s in ("wakeup." then "."), and
+# the work resumed with an Edit. The wait bought nothing both times.
+#
+# Two motives this covers:
+#   1. iteration bookkeeping - ScheduleWakeup ends the turn by construction, so
+#      a reporting beat gets mistaken for a work boundary;
+#   2. wanting the user to LOOK at something. The transcript scrolls. A code box
+#      with an ascii symbol, or an embedded png, gets attention without spending
+#      a turn boundary on it.
+#
+# BLOCKS rather than notices: systemMessage renders for the user only, and the
+# thing that needs redirecting is the model.
+#
+# Fires once per turn (stop_hook_active), so a stop that IS warranted survives
+# the second attempt.
+#
+# Fails OPEN on any error.
+
+set -uo pipefail
+
+payload=$(cat 2>/dev/null) || exit 0
+[ -n "$payload" ] || exit 0
+command -v jq >/dev/null 2>&1 || exit 0
+[ "$(jq -r '.hook_event_name // empty' <<<"$payload" 2>/dev/null)" = "Stop" ] || exit 0
+[ "$(jq -r '.stop_hook_active // false' <<<"$payload" 2>/dev/null)" = "true" ] && exit 0
+
+text=$(jq -r '.last_assistant_message // empty' <<<"$payload" 2>/dev/null | head -c 20000)
+[ -n "${text:-}" ] || exit 0
+
+# Fences and inline spans stripped: a quoted example of the offending line is
+# evidence about a past turn, not a plan for the next one.
+t=$(sed '/^[[:space:]]*```/,/^[[:space:]]*```/d' <<<"$text" 2>/dev/null | sed 's/`[^`]*`//g')
+[ -n "${t:-}" ] || exit 0
+
+# Future-tense work with the actor being ME. Verb list is deliberately narrow -
+# it must name work, not narration ("next, note that" is not a deferral).
+ANNOUNCE="\
+(applying|doing|starting|tackling|implementing|running|building|writing|adding|fixing|extending|wiring|checking|verifying|measuring|testing)[^.!?]{0,90}\bnext\b\
+|\bnext (up|step|steps|action|iteration|wake|pass|round)\b\
+|\bnext[,:] (i|we)\b\
+|\bnext wake\b\
+|\b(i'?ll|i will|then i'?ll|i am going to|going to) (now |then |also )?(start|begin|do|apply|implement|run|build|write|add|fix|extend|wire|continue|pick up|move on|tackle|handle|check|verify|measure|test)\b\
+|\b(continuing|proceeding|moving on|carrying on) (with|to|on|through)\b\
+|\bpicks up\b\
+|\bleft (to do|for the next)\b\
+|\b(remaining|remainder|what'?s left) (from|is|are|to do|on|work|item)\b\
+|\bthe (one|item|part|half) (still|left) (to do|open|outstanding)\b\
+|\bstill (to do|open|outstanding|pending|not done)\b\
+|\bthat (is|leaves) the (one|only|last|remaining)\b"
+
+hit=$(grep -ioE "$ANNOUNCE" <<<"$t" 2>/dev/null | sed 's/[[:space:]]\+/ /g' | sort -u | head -2 | paste -sd'; ' -)
+[ -n "$hit" ] || exit 0
+
+# SIMON SAYS. The user can ASK for the plan. Answering "what would you do next"
+# with next steps is the requested deliverable, and stopping after it is right.
+# Read the last real user turn; a question or an explicit plan request passes.
+tp=$(jq -r '.transcript_path // empty' <<<"$payload" 2>/dev/null)
+if [ -f "$tp" ]; then
+  lastu=$(tac "$tp" 2>/dev/null \
+    | jq -r 'select(.message.role=="user") | .message.content | select(type=="string")' 2>/dev/null \
+    | grep -vE '^(Stop hook feedback|<task-notification>|<system-reminder>|\[)' \
+    | head -1 | head -c 600)
+  # A bare interrogative opener is NOT enough: "do it" and "can you check X" open
+  # with one and are imperatives. Either an actual question mark, or an opener
+  # that has no imperative reading.
+  grep -q '?' <<<"$lastu" 2>/dev/null && exit 0
+  grep -qiE '^(what|which|how|why|when|where|any)\b' <<<"$lastu" 2>/dev/null && exit 0
+  grep -qiE '\b(plan|roadmap|options|proposal|what would you|next steps?|dont touch|do not touch|stop|hold|wait)\b' <<<"$lastu" 2>/dev/null && exit 0
+fi
+
+# A blocker only warrants a handback when it is OUTSIDE my reach - the user, or
+# a system I cannot advance. Naming any noun is not the bar; the old regex took
+# "waiting for the repo" as a blocker.
+EXTERNAL="\
+needs? (your|the user'?s) (decision|answer|approval|input|call|go-ahead|credentials|access|permission)\
+|blocked (on|by) (you|your|the user|ci|the build|the pipeline|a deploy|upstream|a review|review|access|credentials)\
+|waiting (on|for) (you|your|the user|ci|the build|the pipeline|a deploy|upstream|a review|review|a response|approval|access|credentials)\
+|until you |unless you |you (have not|haven'?t) (said|decided|answered|approved)\
+|(needs|requires) (a |an )?(human|manual|physical) "
+
+# The escape the guard leaked on 2026-09-04: a dependency on ANOTHER ITEM OF MY
+# OWN LIST reads as a named blocker but is only ordering. "it needs the new
+# private repo to exist first, which is 8a" - 8a is mine to do. Do 8a, then this.
+SELFDEP="\
+which is [#0-9]\
+|depends on (#|item|step|task|[0-9])\
+|needs? [^.!?]{0,70}(to exist|to be (built|done|created|written|renamed))[^.!?]{0,20}first\
+|(after|once) (#|item|step|task)? ?[0-9][a-z]? \
+|blocked (on|by) (#|item|step|task|[0-9])\
+|first, which is"
+
+if grep -qiE "$EXTERNAL" <<<"$t" 2>/dev/null; then exit 0; fi
+
+dep=$(grep -ioE "$SELFDEP[^.!?]{0,40}" <<<"$t" 2>/dev/null | head -1)
+if [ -n "$dep" ]; then
+  r="SELF-OWNED DEPENDENCY: \"$dep\". You named a stopper, but it is another item on your own list - that is ordering, not a blocker. Do the prerequisite first, then the item that waited on it, in one turn. A blocker warrants a handback only when it is outside your reach: the user's decision, credentials, a deploy, a review. [feedback_no_deferring_doable_work]"
+  jq -nc --arg r "$r" '{decision:"block", reason:$r}'
+  exit 0
+fi
+
+r="ANNOUNCED, NOT DONE: \"$hit\". You named the next action and spent the turn boundary on saying it instead of taking it. Is a stop warranted? You know the user can scroll - if you want to get his attention to something, add a code box with an ascii symbol, or embed a png of a graph. Neither costs a turn. Measured 2026-09-03 in session f64ee73f: two turns ended this way, 1527 s parked each, no external dependency either time; the user cancelled both by hand after 75 s and 92 s and the work resumed with an Edit. If nothing NAMED is blocking, do it now and report after. [feedback_no_deferring_doable_work]"
+jq -nc --arg r "$r" '{decision:"block", reason:$r}'
+exit 0

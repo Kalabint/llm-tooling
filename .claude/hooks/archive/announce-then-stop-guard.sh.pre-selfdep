@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+# Blocks a turn that ANNOUNCES the next action instead of taking it.
+#
+# 2026-09-03, session f64ee73f: asked to check six items and set a wakeup "so
+# you finish it even when the llm decides to give the lead back to me", the turn
+# ended twice on a future-tense line - "Scheduled. Next wake picks up #14" -
+# with 1527 s parked on the clock and no external dependency to wait for. The
+# user cancelled each park by hand, 75 s and 92 s in ("wakeup." then "."), and
+# the work resumed with an Edit. The wait bought nothing both times.
+#
+# Two motives this covers:
+#   1. iteration bookkeeping - ScheduleWakeup ends the turn by construction, so
+#      a reporting beat gets mistaken for a work boundary;
+#   2. wanting the user to LOOK at something. The transcript scrolls. A code box
+#      with an ascii symbol, or an embedded png, gets attention without spending
+#      a turn boundary on it.
+#
+# BLOCKS rather than notices: systemMessage renders for the user only, and the
+# thing that needs redirecting is the model.
+#
+# Fires once per turn (stop_hook_active), so a stop that IS warranted survives
+# the second attempt.
+#
+# Fails OPEN on any error.
+
+set -uo pipefail
+
+payload=$(cat 2>/dev/null) || exit 0
+[ -n "$payload" ] || exit 0
+command -v jq >/dev/null 2>&1 || exit 0
+[ "$(jq -r '.hook_event_name // empty' <<<"$payload" 2>/dev/null)" = "Stop" ] || exit 0
+[ "$(jq -r '.stop_hook_active // false' <<<"$payload" 2>/dev/null)" = "true" ] && exit 0
+
+text=$(jq -r '.last_assistant_message // empty' <<<"$payload" 2>/dev/null | head -c 20000)
+[ -n "${text:-}" ] || exit 0
+
+# Fences and inline spans stripped: a quoted example of the offending line is
+# evidence about a past turn, not a plan for the next one.
+t=$(sed '/^[[:space:]]*```/,/^[[:space:]]*```/d' <<<"$text" 2>/dev/null | sed 's/`[^`]*`//g')
+[ -n "${t:-}" ] || exit 0
+
+# Future-tense work with the actor being ME. Verb list is deliberately narrow -
+# it must name work, not narration ("next, note that" is not a deferral).
+ANNOUNCE="\
+(applying|doing|starting|tackling|implementing|running|building|writing|adding|fixing|extending|wiring|checking|verifying|measuring|testing)[^.!?]{0,90}\bnext\b\
+|\bnext (up|step|steps|action|iteration|wake|pass|round)\b\
+|\bnext[,:] (i|we)\b\
+|\bnext wake\b\
+|\b(i'?ll|i will|then i'?ll|i am going to|going to) (now |then |also )?(start|begin|do|apply|implement|run|build|write|add|fix|extend|wire|continue|pick up|move on|tackle|handle|check|verify|measure|test)\b\
+|\b(continuing|proceeding|moving on|carrying on) (with|to|on|through)\b\
+|\bpicks up\b\
+|\bleft (to do|for the next)\b\
+|\bremain(s|ing) for the next\b"
+
+hit=$(grep -ioE "$ANNOUNCE" <<<"$t" 2>/dev/null | sed 's/[[:space:]]\+/ /g' | sort -u | head -2 | paste -sd'; ' -)
+[ -n "$hit" ] || exit 0
+
+# SIMON SAYS. The user can ASK for the plan. Answering "what would you do next"
+# with next steps is the requested deliverable, and stopping after it is right.
+# Read the last real user turn; a question or an explicit plan request passes.
+tp=$(jq -r '.transcript_path // empty' <<<"$payload" 2>/dev/null)
+if [ -f "$tp" ]; then
+  lastu=$(tac "$tp" 2>/dev/null \
+    | jq -r 'select(.message.role=="user") | .message.content | select(type=="string")' 2>/dev/null \
+    | grep -vE '^(Stop hook feedback|<task-notification>|<system-reminder>|\[)' \
+    | head -1 | head -c 600)
+  grep -qiE '\?[[:space:]]*$|^(what|which|how|why|when|where|can|could|would|should|is|are|do|does|any)\b' <<<"$lastu" 2>/dev/null && exit 0
+  grep -qiE '\b(plan|roadmap|options|proposal|what would you|next steps?|dont touch|do not touch|stop|hold|wait)\b' <<<"$lastu" 2>/dev/null && exit 0
+fi
+
+# A named blocker is a real reason to hand back. Naming WHAT blocks it is the
+# bar - "waiting" alone is not.
+grep -qiE 'blocked (on|by)|waiting (on|for) (the |your |a )?[a-z_./-]{3,}|needs? (your|a) (decision|answer|approval|input)|until you|unless you|permission to' <<<"$t" 2>/dev/null && exit 0
+
+r="ANNOUNCED, NOT DONE: \"$hit\". You named the next action and spent the turn boundary on saying it instead of taking it. Is a stop warranted? You know the user can scroll - if you want to get his attention to something, add a code box with an ascii symbol, or embed a png of a graph. Neither costs a turn. Measured 2026-09-03 in session f64ee73f: two turns ended this way, 1527 s parked each, no external dependency either time; the user cancelled both by hand after 75 s and 92 s and the work resumed with an Edit. If nothing NAMED is blocking, do it now and report after. [feedback_no_deferring_doable_work]"
+jq -nc --arg r "$r" '{decision:"block", reason:$r}'
+exit 0
