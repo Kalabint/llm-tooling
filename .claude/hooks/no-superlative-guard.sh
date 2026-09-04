@@ -64,7 +64,10 @@ h_eff=$(hit "$EFF"); h_pnt=$(hit "$PNT"); h_haz=$(hit "$HAZ")
 # one session. The pattern is still defined in banned-patterns.sh but nothing
 # reads it; re-point h_led at hit "$LED" to revive the class.
 h_led=""
-h_edi=$(hit "$EDI"); h_adv=$(hit "$ADV"); h_tim=$(hit "$TIM"); h_par=$(hit "$PAR"); h_fix=$(hit "$FIXP"); h_unrun=$(hit "$UNRUN"); h_abs=$(hit "$ABS"); h_brc=$(hit "$BRC")
+h_edi=$(hit "$EDI"); h_adv=$(hit "$ADV"); h_tim=$(hit "$TIM"); h_par=$(hit "$PAR"); h_fix=$(hit "$FIXP"); h_unrun=$(hit "$UNRUN"); h_abs=$(hit "$ABS")
+# BRC is about what lands in a FILE. The same words in a reply are the fix history
+# being put where this rule says it belongs, so it must not fire on Stop.
+h_brc=""; [ "$event" = "PostToolUse" ] && h_brc=$(hit "$BRC")
 [ -n "$h_cmp$h_tic$h_syc$h_eff$h_pnt$h_haz$h_led$h_edi$h_adv$h_tim$h_par$h_fix$h_unrun$h_abs$h_brc" ] || exit 0
 
 # The words themselves, assembled here so the instruction can quote them verbatim
@@ -124,7 +127,7 @@ if [ -n "$h_adv" ] && [ -z "$h_cmp$h_tic$h_syc$h_eff$h_pnt$h_haz$h_led$h_edi$h_t
   r="CONTEXT PROBABLY MISSING. Cross-source comparison: \"$h_adv\". Before asserting it, state in one sentence what EACH source is and when it was populated — a dev restore, a live feed, a different clock, a filtered subset. Two such claims were false on 2026-08-31. Re-emit with that sentence, or drop the claim."
   jq -nc --arg r "$r" '{decision:"block", reason:$r}'; exit 0
 fi
-r="$r Re-emit without it, silently. Open with a --- divider, then a code box containing: banned: $words\n\n"
+r="$r Re-emit without it, silently. If the phrase is being QUOTED as an example rather than asserted in your own voice, keep it and wrap it in backticks -- code spans are stripped before matching. Open with a --- divider, then a code box containing: banned: $words\n\n"
 
 
 jq -nc --arg r "$r" '{decision:"block", reason:$r}'
