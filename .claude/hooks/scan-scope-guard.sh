@@ -30,13 +30,20 @@ printf '%s' "$cmd" | grep -qE '(^|[|;&[:space:]])timeout[[:space:]]+[0-9]' && wr
 
 # Candidate scan roots: bare tokens that exist as directories. A `grep -r` with no path
 # argument walks the working directory.
+#
+# `cd <dir> && grep -r ... src/` must not treat <dir> as a scan root -- it is the working
+# directory the scan is scoped FROM, not a thing being scanned. Caught 2026-09-05 by this
+# guard firing on its own author for exactly that shape, with the paths correctly named.
 roots=""
+prev=""
 for tok in $cmd; do
   case "$tok" in
-    -*|*'*'*|*'?'*) continue ;;
+    -*|*'*'*|*'?'*) prev=$tok; continue ;;
   esac
   tok=${tok%\"}; tok=${tok#\"}; tok=${tok%\'}; tok=${tok#\'}
-  [ -n "$tok" ] || continue
+  [ -n "$tok" ] || { prev=$tok; continue; }
+  case "$prev" in cd|pushd) prev=$tok; continue ;; esac
+  prev=$tok
   if [ "$tok" = "." ]; then roots="$roots $cwd"; continue; fi
   case "$tok" in
     /*) [ -d "$tok" ] && roots="$roots $tok" ;;
