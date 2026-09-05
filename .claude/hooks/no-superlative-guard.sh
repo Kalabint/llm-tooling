@@ -64,11 +64,11 @@ h_eff=$(hit "$EFF"); h_pnt=$(hit "$PNT"); h_haz=$(hit "$HAZ")
 # one session. The pattern is still defined in banned-patterns.sh but nothing
 # reads it; re-point h_led at hit "$LED" to revive the class.
 h_led=""
-h_edi=$(hit "$EDI"); h_adv=$(hit "$ADV"); h_tim=$(hit "$TIM"); h_par=$(hit "$PAR"); h_fix=$(hit "$FIXP"); h_unrun=$(hit "$UNRUN"); h_abs=$(hit "$ABS")
+h_edi=$(hit "$EDI"); h_adv=$(hit "$ADV"); h_tim=$(hit "$TIM"); h_par=$(hit "$PAR"); h_fix=$(hit "$FIXP"); h_unrun=$(hit "$UNRUN"); h_abs=$(hit "$ABS"); h_offbox=$(hit "$OFFBOX")
 # BRC is about what lands in a FILE. The same words in a reply are the fix history
 # being put where this rule says it belongs, so it must not fire on Stop.
 h_brc=""; [ "$event" = "PostToolUse" ] && h_brc=$(hit "$BRC")
-[ -n "$h_cmp$h_tic$h_syc$h_eff$h_pnt$h_haz$h_led$h_edi$h_adv$h_tim$h_par$h_fix$h_unrun$h_abs$h_brc" ] || exit 0
+[ -n "$h_cmp$h_tic$h_syc$h_eff$h_pnt$h_haz$h_led$h_edi$h_adv$h_tim$h_par$h_fix$h_unrun$h_abs$h_offbox$h_brc" ] || exit 0
 
 # The words themselves, assembled here so the instruction can quote them verbatim
 # and the next turn has nothing to decide. Backticked: code spans are stripped
@@ -102,13 +102,17 @@ abs_searched=$(printf '%s' "$raw_text" | grep -ciE '\b(grep|rg|ripgrep|ag|find) 
 [ "${abs_searched:-0}" -gt 0 ] && h_abs=""
 par_cited=$(printf '%s' "$raw_text" | grep -ciE '[a-z_./-]+\.(ts|js|rb|py|sql|sh|yml|json):[0-9]+|```|\b(verified|i read|reading it|from the source|per the code)\b')
 [ "${par_cited:-0}" -gt 0 ] && h_par=""
-[ -n "$h_cmp$h_tic$h_syc$h_eff$h_pnt$h_haz$h_led$h_edi$h_adv$h_tim$h_par$h_fix$h_unrun$h_abs$h_brc" ] || exit 0
+[ -n "$h_cmp$h_tic$h_syc$h_eff$h_pnt$h_haz$h_led$h_edi$h_adv$h_tim$h_par$h_fix$h_unrun$h_abs$h_offbox$h_brc" ] || exit 0
 if [ -n "$h_brc" ] && [ -z "$h_cmp$h_tic$h_syc$h_eff$h_pnt$h_haz$h_led$h_edi$h_tim" ]; then
   r="FIX-HISTORY BREADCRUMB IN THE ARTEFACT: \"$h_brc\". You fixed something and are writing the story of the fix into the file. Cut it. Keep what the code DOES, a gotcha that bites at this line, a param's semantics. Delete what it used to do, why the earlier attempt failed, the numbered defect list, and the dated incident. On 2026-09-04 walk_osm.sql reached 48% comment and walk_osm_fn.sql 35%, carrying WHY-THE-FIRST-VERSION-LOST headers that nothing will read again. The fix history belongs in the reply and the commit, not the source."
   jq -nc --arg r "$r" '{decision:"block", reason:$r}'; exit 0
 fi
 if [ -n "$h_abs" ] && [ -z "$h_cmp$h_tic$h_syc$h_eff$h_pnt$h_haz$h_led$h_edi$h_tim" ]; then
   r="ABSENCE CLAIMED WITHOUT A SEARCH: \"$h_abs\". Show the search and its SCOPE in this message -- the command, the directories it covered, and the empty result. On 2026-09-04 \"a_digest_state is read by nothing in the repo, 992 MB, drop it\" went into a memory recommending deletion of a live feature: it drives the /statistics/heatmap brake/accel slider via api/h3-cells/+server.ts:287,289. The earlier grep had covered future_position_stats/ only. A partial search cannot support an absence claim, and a size measurement is not a search. Run it across the whole tree, or say UNVERIFIED."
+  jq -nc --arg r "$r" '{decision:"block", reason:$r}'; exit 0
+fi
+if [ -n "$h_offbox" ] && [ -z "$h_cmp$h_tic$h_syc$h_eff$h_pnt$h_haz$h_led$h_edi$h_tim" ]; then
+  r="COMPARISON AGAINST AN UNMEASURABLE SIDE: \"$h_offbox\". One side of that comparison cannot be measured from this box -- a client link, a user's device, a network you have no instrument on. Measure the side you can and name the instrument the other side would need. On 2026-09-05 \"the payload is 11 MB; on a phone that plausibly exceeds the 570-790 ms of compute\" did both halves wrong: the compute was measured, the link was not measurable at all, and the 11 MB was the UNCOMPRESSED size -- gzip -6 gives 4.79 MB and trimming the serialisation gives 0.85 MB, so the quoted figure was 13.8x the real wire cost. Re-emit with the measurable side measured and the rest labelled as needing a client-side timing."
   jq -nc --arg r "$r" '{decision:"block", reason:$r}'; exit 0
 fi
 if [ -n "$h_unrun" ] && [ -z "$h_cmp$h_tic$h_syc$h_eff$h_pnt$h_haz$h_led$h_edi$h_tim$h_fix" ]; then

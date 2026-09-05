@@ -353,6 +353,18 @@ ABS="$ABS"'|\b(is|are|was|were) (currently |actually )?(unused|unreferenced|neve
 ABS="$ABS"'|\bno (consumers?|callers?|readers?|references?|usages?) (exist|found|anywhere)\b'
 ABS="$ABS"'|\b(not|never) (read|used|called|referenced) (by )?anywhere\b'
 
+# 16. OFFBOX -- a quantitative COMPARISON whose other side is not measurable from
+# this box. 2026-09-05: "the payload is 11 MB; on a phone that plausibly exceeds
+# the 570-790 ms of compute". The 11 MB was measured, the compute was measured,
+# the phone's link was not and cannot be from here -- and the quoted 11 MB was the
+# uncompressed size, 13.8x the 0.85 MB that actually goes on the wire. A hedge
+# adverb in front of a comparative is the giveaway: it marks a number that was
+# reasoned to, not read. Measure the side you can (payload after gzip, server
+# time) and state the other side as needing a client-side instrument.
+OFFBOX='\b(plausibly|likely|probably|presumably|arguably|comfortably) (exceeds?|dominates?|outweighs?|swamps?|eclipses?|takes? longer|costs? more|is (slower|longer|bigger|worse))\b'
+OFFBOX="$OFFBOX"'|\bon a (phone|mobile|slow (connection|link|network)|typical (phone|laptop|connection|device))\b[^.]{0,80}\b(exceeds?|dominat|outweigh|swamp|slower|longer than|more than|worse)'
+OFFBOX="$OFFBOX"'|\b(that|this|which|it) (plausibly|likely|probably|presumably) (exceeds?|dominates?|outweighs?|swamps?)\b'
+
 # 15. BRC -- fix-history breadcrumbs written INTO the artefact. Fixing something
 # and then burying it under a header that narrates every defect, what the old
 # version did wrong, and what a future reader must not do. 2026-09-04: walk_osm.sql
@@ -367,7 +379,9 @@ BRC='^[[:space:]]*(--|#|\*|//)[[:space:]]*(WHY [A-Z][A-Z ]{3,}|WHAT (WENT )?(WRO
 BRC="$BRC"'|\b(the|its) (old|first|previous|earlier|prior) (version|implementation|draft|attempt|rule) (did|was|had|used|failed|lost|returned)'
 BRC="$BRC"'|\b(defects?|bugs?|failures?) (this|it) (fixes|fixed|repairs|addresses)\b'
 BRC="$BRC"'|\b(all )?measured 20[0-9]{2}-[0-9]{2}-[0-9]{2}\b|\bon 20[0-9]{2}-[0-9]{2}-[0-9]{2} (a|an|the|it|this|I|we) '
-BRC="$BRC"'|\bdo NOT\b|\bDO NOT\b|\bnever (do|write|use|call|add) this\b'
+# No case-sensitive alternatives here: hit() greps with -i, so "DO NOT" would
+# match any prose "do not", including a quotation. Only the narrating shapes.
+BRC="$BRC"'|\bnever (do|write|use|call|add) this\b'
 
 # Strip fenced blocks and inline code before matching: quoting a banned phrase in
 # backticks (explaining this guard, a table of the patterns) is not using it.
