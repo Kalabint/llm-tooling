@@ -23,6 +23,11 @@
 #                  pattern is kept below but has NO consumer now that $ALL_BANNED
 #                  is gone. Re-wire it in no-superlative-guard.sh to revive it.
 #
+# 2026-09-06  VIRT NEW CLASS: announced virtue — "stated at the front rather than
+#                  buried", "reported as such rather than as an aside". Claims credit
+#                  for a visible choice against a strawman nobody proposed.
+#                  Trigger: a dissertation §1.3 opening with the first form.
+#
 # 2026-08-31  TIM  NEW CLASS: temporal self-framing — "tonight", "this evening",
 #                  "all morning". I have turns, not days; a user may write from
 #                  any timezone and resume whenever. "now" = this turn, "later" =
@@ -352,6 +357,17 @@ ABS="$ABS"'|\bnothing (else )?(reads|uses|calls|references|consumes|touches)\b'
 ABS="$ABS"'|\b(is|are|was|were) (currently |actually )?(unused|unreferenced|never (read|used|called)|dead code)\b'
 ABS="$ABS"'|\bno (consumers?|callers?|readers?|references?|usages?) (exist|found|anywhere)\b'
 ABS="$ABS"'|\b(not|never) (read|used|called|referenced) (by )?anywhere\b'
+
+# 17. VIRT -- announcing a virtue instead of exercising it. "Stated at the front rather
+# than buried", "reported as such rather than as an aside", "named rather than glossed".
+# The construction claims credit for a choice the reader can already see was made, and
+# the second half is always a strawman nobody proposed. 2026-09-06: flagged in a
+# dissertation whose own §1.3 opened "Stated at the front rather than buried, because
+# the omissions bound every conclusion" -- the placement was visible; the sentence added
+# only self-approval. Cut the clause; keep the content.
+VIRT='\b(stated|placed|reported|said|named|written|listed|shown|given|tabulated|treated|kept|put)\b[^.]{0,40}\brather than (buried|an aside|as an aside|implied|hidden|glossed|hand.?waved|asserted|assumed|left implicit)\b'
+VIRT="$VIRT"'|\brather than (decorating|padding|as decoration)\b'
+VIRT="$VIRT"'|\b(is|are) (the|a) (substantive|real|actual) (result|finding|point)\b'
 
 # 16. OFFBOX -- a quantitative COMPARISON whose other side is not measurable from
 # this box. 2026-09-05: "the payload is 11 MB; on a phone that plausibly exceeds
