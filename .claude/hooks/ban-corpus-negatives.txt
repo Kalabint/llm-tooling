@@ -1,0 +1,25 @@
+# Sentences that must stay clean. ban-add.sh refuses any pattern that fires here.
+# Add a line whenever a proposed ban would have caught legitimate output.
+# Lines starting with # are ignored.
+the core loop runs once per chunk
+the document's central claim is analytic
+the key column is hour_of_day
+the main table is km_h3_agg
+the last one is unmeasured: a_digest centroid anatomy
+n=1 is the largest band at 41.78%
+the biggest file is n_histogram.csv at 33 kB
+that one failed on an ambiguous relname
+cut on variance rather than n
+the value comes from SQL rather than from the PDF
+n counts contributions rather than fixes
+reports drift rather than failing
+compared against the measurement rather than against itself
+digest bytes are a function of round(t) rather than n
+sampled at the page level rather than the row level
+use the dense table instead of the eight bands
+2.93 x 18,827 MiB = 53.9 GiB, so the base is the heap
+the ingestor discards klass at ingestor.sql:62-72
+19 of 20 extracts finished clean
+I read five of the twenty-two files
+UNVERIFIED: attributions recalled, not checked this session
+committed to the repo, /tmp copy deleted
