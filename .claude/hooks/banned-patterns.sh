@@ -379,6 +379,19 @@ VIRT="$VIRT"'|\b(rather than|instead of) (papering|paper(ing)? over|fudging|fudg
 #  (c) the same contrast written with a comma
 VIRT="$VIRT"'|\b(measured|checked|verified|filled|stated|named|counted|read|run),? not (assumed|guessed|inferred|recalled|papered|faked|invented|imagined)\b'
 
+# 17b. MSG -- manufactured significance: ranking one item of a list I just wrote
+# as THE important one. 2026-09-06: "and the last one is the real gap" -- it was
+# neither a gap nor unranked; the fix was named in the same breath. If you can
+# point at it and say what would solve it, it is an item, not a gap. Rank by
+# putting it first; the position carries the ranking without the announcement.
+# Nouns kept deliberately narrow -- "the core loop", "the document's central
+# claim" and "the key column" describe a thing, they do not rank my own list.
+MSG='\b(the|this|that) (is |was )?(the )?(real|actual|true|genuine|big|hard|crux|central) (gap|catch|one|part|bit|thing)\b'
+MSG="$MSG"'|\bthe (big|hard|real|important|interesting|tricky) (one|part|bit)\b'
+MSG="$MSG"'|\bthe part worth (your )?(attention|noting|reading)\b'
+MSG="$MSG"'|\bwhat (actually|really) matters\b|\bthe (thing|one|bit) that (actually |really )?matters\b'
+MSG="$MSG"'|\bthe crux\b|\bdeserves (special |particular )?emphasis\b'
+
 # 16. OFFBOX -- a quantitative COMPARISON whose other side is not measurable from
 # this box. 2026-09-05: "the payload is 11 MB; on a phone that plausibly exceeds
 # the 570-790 ms of compute". The 11 MB was measured, the compute was measured,
