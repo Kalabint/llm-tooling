@@ -368,6 +368,16 @@ ABS="$ABS"'|\b(not|never) (read|used|called|referenced) (by )?anywhere\b'
 VIRT='\b(stated|placed|reported|said|named|written|listed|shown|given|tabulated|treated|kept|put)\b[^.]{0,40}\brather than (buried|an aside|as an aside|implied|hidden|glossed|hand.?waved|asserted|assumed|left implicit)\b'
 VIRT="$VIRT"'|\brather than (decorating|padding|as decoration)\b'
 VIRT="$VIRT"'|\b(is|are) (the|a) (substantive|real|actual) (result|finding|point)\b'
+# 2026-09-06: the two closed lists above missed "filling that in honestly rather
+# than papering it" -- neither half was enumerated. Generalise on the two halves
+# that carry the tell, independently of the verb:
+#  (a) an adverb asserting my own conduct, followed by the contrast
+VIRT="$VIRT"'|\b(honestly|properly|genuinely|truthfully|faithfully|transparently|rigorously|diligently|thoroughly|scrupulously)\b[^.]{0,30}\b(rather than|instead of)\b'
+#  (b) the alternative is a pejorative for not-doing-the-work: always a strawman,
+#      whatever verb precedes it
+VIRT="$VIRT"'|\b(rather than|instead of) (papering|paper(ing)? over|fudging|fudge|hand.?waving|hand.?wave|glossing|gloss|faking|fake|pretending|pretend|guessing|guess|inventing|invent|hiding|hide|burying|bury|dodging|dodge|ducking|duck|skipping|skip|waving|wave|winging|wing)\b'
+#  (c) the same contrast written with a comma
+VIRT="$VIRT"'|\b(measured|checked|verified|filled|stated|named|counted|read|run),? not (assumed|guessed|inferred|recalled|papered|faked|invented|imagined)\b'
 
 # 16. OFFBOX -- a quantitative COMPARISON whose other side is not measurable from
 # this box. 2026-09-05: "the payload is 11 MB; on a phone that plausibly exceeds
