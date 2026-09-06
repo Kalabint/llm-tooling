@@ -28,9 +28,9 @@ command -v jq >/dev/null 2>&1 || exit 0
 # Never re-block a turn we already forced: avoids a loop.
 [ "$(jq -r '.stop_hook_active // false' <<<"$payload" 2>/dev/null)" = "true" ] && exit 0
 
+tp=$(jq -r '.transcript_path // empty' <<<"$payload" 2>/dev/null)
 text=$(jq -r '.last_assistant_message // empty' <<<"$payload" 2>/dev/null | head -c 20000)
 if [ -z "$text" ]; then
-  tp=$(jq -r '.transcript_path // empty' <<<"$payload" 2>/dev/null)
   [ -f "$tp" ] || exit 0
   text=$(tac "$tp" 2>/dev/null \
     | jq -r 'select(.type=="assistant" and (.isSidechain|not))
