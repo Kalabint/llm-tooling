@@ -70,7 +70,7 @@ $1"; }
 if grep -qiE '>[[:space:]]*banned\b' <<<"$p" 2>/dev/null; then
   _ph=$(sed -E 's/[[:space:]]*>[[:space:]]*banned.*//I' <<<"$p" | tail -1 | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
   _rs=$(sed -E 's/.*>[[:space:]]*banned[.:,]?[[:space:]]*//I' <<<"$p" | tr '\n' ' ' | sed 's/[[:space:]]*$//')
-  add "BAN ISSUED. phrase=\"$_ph\" reason=\"$_rs\". Record it: ~/.claude/hooks/ban-add.sh [-p '<regex>'] \"<phrase>\" \"<reason>\" -- it validates against ban-corpus-negatives.txt, writes userban.tsv, tests the guard end to end and commits to ChatGPT-Primer. Without -p only that literal sentence is caught; decide whether the SHAPE generalises and pass -p if it does. Do not answer with a resolution to avoid it -- a resolution is gone next session."
+  add "BAN ISSUED. phrase=\"$_ph\" reason=\"$_rs\". Dispatch ONE subagent (Agent tool, model opus explicitly, never inherit) and give it THIS ENTIRE user message verbatim plus: run ~/.claude/hooks/ban-add.sh [-p '<regex>'] \"<phrase>\" \"<reason>\"; the reason states the RULE, so decide from it whether the SHAPE generalises and pass -p if it does, since without -p only that literal sentence is caught; the script validates against ban-corpus-negatives.txt, writes userban.tsv, proves the guard blocks and commits to ChatGPT-Primer; it must report the pattern, the test counts and the commit hash. Do not answer with a resolution to avoid the phrase -- a resolution is gone next session."
 fi
 
 
