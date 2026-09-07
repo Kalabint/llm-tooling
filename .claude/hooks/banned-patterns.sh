@@ -392,6 +392,27 @@ MSG="$MSG"'|\bthe part worth (your )?(attention|noting|reading)\b'
 MSG="$MSG"'|\bwhat (actually|really) matters\b|\bthe (thing|one|bit) that (actually |really )?matters\b'
 MSG="$MSG"'|\bthe crux\b|\bdeserves (special |particular )?emphasis\b'
 
+# 18. DEFEND -- pre-empting an objection nobody raised. Writing a passage that
+# explains what a thing is NOT, or why a choice was made, when the reader never
+# asked. It reads as defensive and it creates an artefact whose only content is the
+# defence: a whole file existed to explain why a corpus was private, and deleting it
+# then left a commit explaining the deletion. Never writing it is the fix, because
+# nothing that was never written needs a comment.
+#
+# The object is what separates this from an ordinary negative. "n is not t" states a
+# fact. "This is not a study" defends against a category the reader never proposed.
+# So the pattern requires a CATEGORY noun, not any noun.
+DEFEND='\b(is|are|was|were|it.s) not (intended|offered|meant|presented|put forward) as\b'
+DEFEND="$DEFEND"'|\b(is|are|was|were|it.s) not (a|an|being) '
+DEFEND="$DEFEND"'(study|claim|dataset|corpus|guarantee|promise|endorsement|substitute|'
+DEFEND="$DEFEND"'replacement|criticism|attack|complaint|excuse|apology|manifesto|'
+DEFEND="$DEFEND"'population estimate|exhaustive|definitive|comprehensive)'
+DEFEND="$DEFEND"'|\bshould not be (read|taken|understood) as\b'
+DEFEND="$DEFEND"'|\bdoes not (claim|purport|pretend) to\b'
+DEFEND="$DEFEND"'|\bnot (to be )?confused with\b'
+DEFEND="$DEFEND"'|\bthat is the whole (provenance|story|point|answer)\b'
+DEFEND="$DEFEND"'|\brather than letting\b'
+
 # 17c. DASH -- the em dash. The user's rule since 2026-08-22 (feedback_no_sycophancy), A semicolon, a colon, a comma, a
 # period or a restructure always exists. Written as a literal U+2014 and as the
 # LaTeX --- ligature, since the artefacts here are .tex.

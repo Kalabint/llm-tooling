@@ -64,7 +64,7 @@ h_eff=$(hit "$EFF"); h_pnt=$(hit "$PNT"); h_haz=$(hit "$HAZ")
 # one session. The pattern is still defined in banned-patterns.sh but nothing
 # reads it; re-point h_led at hit "$LED" to revive the class.
 h_led=""
-h_edi=$(hit "$EDI"); h_adv=$(hit "$ADV"); h_tim=$(hit "$TIM"); h_par=$(hit "$PAR"); h_fix=$(hit "$FIXP"); h_unrun=$(hit "$UNRUN"); h_abs=$(hit "$ABS"); h_offbox=$(hit "$OFFBOX"); h_virt=$(hit "$VIRT"); h_msg=$(hit "$MSG"); h_dash=$(hit "$DASH")
+h_defend=$(hit "$DEFEND"); h_edi=$(hit "$EDI"); h_adv=$(hit "$ADV"); h_tim=$(hit "$TIM"); h_par=$(hit "$PAR"); h_fix=$(hit "$FIXP"); h_unrun=$(hit "$UNRUN"); h_abs=$(hit "$ABS"); h_offbox=$(hit "$OFFBOX"); h_virt=$(hit "$VIRT"); h_msg=$(hit "$MSG"); h_dash=$(hit "$DASH")
 # USERBAN: bans issued in conversation via "<phrase> > banned. <reason>", written
 # by ban-add.sh. Kept out of banned-patterns.sh so adding one cannot break a
 # curated class, and so each carries the reason the user gave, verbatim.
@@ -81,7 +81,7 @@ fi
 # BRC is about what lands in a FILE. The same words in a reply are the fix history
 # being put where this rule says it belongs, so it must not fire on Stop.
 h_brc=""; [ "$event" = "PostToolUse" ] && h_brc=$(hit "$BRC")
-[ -n "$h_cmp$h_tic$h_syc$h_eff$h_pnt$h_haz$h_led$h_edi$h_adv$h_tim$h_par$h_fix$h_unrun$h_abs$h_offbox$h_virt$h_msg$h_dash$h_uban$h_brc" ] || exit 0
+[ -n "$h_cmp$h_tic$h_syc$h_eff$h_pnt$h_haz$h_led$h_edi$h_adv$h_tim$h_par$h_fix$h_unrun$h_abs$h_offbox$h_virt$h_msg$h_dash$h_defend$h_uban$h_brc" ] || exit 0
 
 # The words themselves, assembled here so the instruction can quote them verbatim
 # and the next turn has nothing to decide. Backticked: code spans are stripped
@@ -101,6 +101,7 @@ r="BANNED PHRASING."
 [ -n "$h_adv" ] && r="$r Cross-source comparison: \"$h_adv\" — state what EACH source is and when it was populated [why: feedback_check_it_dont_assume]."
 [ -n "$h_par" ] && r="$r Parameter semantics: \"$h_par\" — cite file:line where the setting is defined and what it multiplies or gates [why: feedback_check_it_dont_assume]."
 [ -n "$h_uban" ] && r="$r You banned this on sight: \"$h_uban\" — $uban_reason."
+[ -n "$h_defend" ] && r="$r Defending an objection nobody raised: \"$h_defend\". The reader did not ask. A passage whose only content is the defence becomes an artefact that has to be maintained, and deleting it later leaves a commit explaining the deletion. State the thing and stop; nothing that was never written needs a comment. [why: feedback_sanitation_no_breadcrumbs]"
 [ -n "$h_dash" ] && r="$r Em dash: a semicolon, colon, comma, period or restructure always exists [why: feedback_no_sycophancy, 2026-08-22]."
 [ -n "$h_msg" ] && r="$r Manufactured significance: \"$h_msg\" — you named the fix in the same breath, so it is an item, not a gap. Rank it by putting it first [why: feedback_no_sycophancy]."
 [ -n "$h_virt" ] && r="$r Announced virtue: \"$h_virt\" — the reader can see the choice was made; the second half is a strawman [why: feedback_no_sycophancy]."
@@ -119,7 +120,7 @@ abs_searched=$(printf '%s' "$raw_text" | grep -ciE '\b(grep|rg|ripgrep|ag|find) 
 [ "${abs_searched:-0}" -gt 0 ] && h_abs=""
 par_cited=$(printf '%s' "$raw_text" | grep -ciE '[a-z_./-]+\.(ts|js|rb|py|sql|sh|yml|json):[0-9]+|```|\b(verified|i read|reading it|from the source|per the code)\b')
 [ "${par_cited:-0}" -gt 0 ] && h_par=""
-[ -n "$h_cmp$h_tic$h_syc$h_eff$h_pnt$h_haz$h_led$h_edi$h_adv$h_tim$h_par$h_fix$h_unrun$h_abs$h_offbox$h_virt$h_msg$h_dash$h_uban$h_brc" ] || exit 0
+[ -n "$h_cmp$h_tic$h_syc$h_eff$h_pnt$h_haz$h_led$h_edi$h_adv$h_tim$h_par$h_fix$h_unrun$h_abs$h_offbox$h_virt$h_msg$h_dash$h_defend$h_uban$h_brc" ] || exit 0
 if [ -n "$h_brc" ] && [ -z "$h_cmp$h_tic$h_syc$h_eff$h_pnt$h_haz$h_led$h_edi$h_tim" ]; then
   r="FIX-HISTORY BREADCRUMB IN THE ARTEFACT: \"$h_brc\". You fixed something and are writing the story of the fix into the file. Cut it. Keep what the code DOES, a gotcha that bites at this line, a param's semantics. Delete what it used to do, why the earlier attempt failed, the numbered defect list, and the dated incident. On 2026-09-04 walk_osm.sql reached 48% comment and walk_osm_fn.sql 35%, carrying WHY-THE-FIRST-VERSION-LOST headers that nothing will read again. The fix history belongs in the reply and the commit, not the source."
   jq -nc --arg r "$r" '{decision:"block", reason:$r}'; exit 0
