@@ -38,7 +38,12 @@ TEXT=$(printf '%s' "$TEXT" | sed -E 's/`[^`]*`//g; /^```/,/^```/d')
 VERB='(contain|contains|containing|carry|carries|carrying|hold|holds|holding|include|includes|including|full of|riddled with)'
 CAT='(home address|street address|GPS coordinate|GPS includ|coordinates includ|medical|health record|patient|diagnos|password|credential|api[ -]?key|secret key|access token|bank|IBAN|social security|passport|phone number|date of birth|personal data|database row|file content|private key)'
 
+# A category followed by ZERO is proof of absence: a verification table reading
+# "home address 0, medical 0" is the opposite of an inventory. Only zero counts are
+# stripped. A nonzero count is still a claim of presence and must still fire, which
+# is why this does not simply drop every counted category.
 hit=$(printf '%s' "$TEXT" | grep -ioE "${VERB}[^.]{0,200}" 2>/dev/null | while IFS= read -r span; do
+        span=$(printf '%s' "$span" | sed -E "s/${CAT}s?[[:space:]:=·|-]*0([^0-9]|$)/ /gI")
         n=$(printf '%s' "$span" | grep -ioE "$CAT" | sort -u | wc -l)
         [ "$n" -ge 2 ] && { printf '%s' "$span" | cut -c1-110; break; }
       done)
