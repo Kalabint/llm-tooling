@@ -22,8 +22,8 @@ TSV="$HOOKS/userban.tsv"
 NEG="$HOOKS/ban-corpus-negatives.txt"
 REPO="${BAN_REPO:-$HOME/ChatGPT-Primer}"
 
-pat=""
-if [ "${1:-}" = "-p" ]; then pat="$2"; shift 2; fi
+pat=""; generalised=0
+if [ "${1:-}" = "-p" ]; then pat="$2"; generalised=1; shift 2; fi
 phrase="${1:-}"; reason="${2:-}"
 if [ -z "$phrase" ] || [ -z "$reason" ]; then
   echo "usage: ban-add.sh [-p '<regex>'] \"<phrase>\" \"<reason>\"" >&2; exit 2
@@ -81,9 +81,11 @@ if [ -d "$REPO/.git" ]; then
     && echo "  committed: $(git -C "$REPO" log --oneline -1)"
 fi
 
-case "$pat" in
-  '\b'*'\b') [ -z "${2:-}" ] && echo
-             echo "This is the literal phrase. A paraphrase still passes."
-             echo "If the shape generalises, re-run with -p '<regex>' and the literal row"
-             echo "can be dropped from $(basename "$TSV")." ;;
-esac
+# Only the literal path gets the warning. Testing the pattern's shape cannot tell
+# the two apart: the literal branch wraps its output in \b too, so both look alike.
+if [ "$generalised" -eq 0 ]; then
+  echo
+  echo "This is the literal phrase. A paraphrase still passes."
+  echo "If the shape generalises, re-run with -p '<regex>' and the literal row"
+  echo "can be dropped from $(basename "$TSV")."
+fi
