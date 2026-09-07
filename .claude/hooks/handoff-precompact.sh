@@ -22,10 +22,11 @@
 # between nothing drove the write except the human noticing a stderr line and
 # relaying it. Held twice, wrote never.
 #
-# Manual /compact is handled earlier and better by handoff-expansion.sh, which
-# can block and inject, so it converts the command into a handoff turn and lets
-# the retry through. This file is the auto path, where no such interception point
-# exists: the compaction proceeds and the summary carries the write forward.
+# This file is now the third line of defence and the weakest, because by the time it
+# runs the window is already full. handoff-context-gate.sh asks for the doc at a token
+# threshold with room to spare, and handoff-expansion.sh converts a manual /compact
+# into a handoff turn. Both of those can get a doc written. This one can only shape
+# what the summariser keeps on the way past.
 set -uo pipefail
 IN=$(cat 2>/dev/null) || exit 0
 command -v jq >/dev/null 2>&1 || exit 0
@@ -47,12 +48,8 @@ AGE=$(( $(date +%s) - $(stat -c %Y "$DOC" 2>/dev/null || echo 0) ))
 [ "$AGE" -lt 1800 ] && exit 0
 MIN=$(( AGE / 60 ))
 
-# Leave the one-shot notice for handoff-notify.sh as well. The summary reaches the
-# agent immediately; this reaches it on the next user prompt. Belt and braces, and
-# the two cannot both be silently lost.
-mkdir -p "$HOME/.claude/handoff-pending" 2>/dev/null
-printf '%s\n%s\n' "$MIN" "$DOC" > "$HOME/.claude/handoff-pending/${SID}.notify" 2>/dev/null
-
+# Reaching here means the Stop gate (handoff-context-gate.sh) did not get the doc
+# written before the window filled, so this is the last chance to shape what survives.
 cat <<EOF
 HANDOFF DOC IS ${MIN} MIN STALE: ${DOC}
 

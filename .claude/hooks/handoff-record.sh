@@ -18,5 +18,4 @@ esac
 mkdir -p "$HOME/.claude/handoff-active" 2>/dev/null
 printf '%s\n' "$P" > "$HOME/.claude/handoff-active/$SID" 2>/dev/null
 # the doc is fresh again: release any held compaction
-rm -f "$HOME/.claude/handoff-pending/${SID}.autoblocked" 2>/dev/null
 exit 0
