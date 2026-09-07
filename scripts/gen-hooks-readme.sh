@@ -44,8 +44,6 @@ Every value that would identify a machine lives in `local.env`, which is gitigno
 `local.env.example` lists the keys. Unset keys make the affected check inert rather
 than making it misfire, so a fresh clone runs without configuration.
 
-`scripts/corpus-stats.sh` to get the same table for your own transcripts.
-
 HDR
   printf '| script | event | purpose |\n|-|-|-|\n'
   for f in $(ls .claude/hooks/*.sh | sort); do

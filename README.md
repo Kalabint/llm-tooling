@@ -49,6 +49,7 @@ Install is manual, into two different places. See the hooks README.
   Needs `bash` and `jq`.
 - [`scripts/`](scripts/): `pii-sweep.sh` refuses to publish identifying data and runs from
   the git hooks; `corpus-stats.sh` measures how often each guard would fire against your
+  own transcripts.
 - [`universal_task_system_instructions.txt`](universal_task_system_instructions.txt): the
   ChatGPT primer — give it a query, it lists topics, selects an overqualified role, and
   answers from that perspective.
