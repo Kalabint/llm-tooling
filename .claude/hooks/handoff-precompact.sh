@@ -27,6 +27,12 @@
 # threshold with room to spare, and handoff-expansion.sh converts a manual /compact
 # into a handoff turn. Both of those can get a doc written. This one can only shape
 # what the summariser keeps on the way past.
+#
+# Which is why it ships the handoff skill's own "What to write" section rather than a
+# paraphrase of it. The audience is the summariser, and a summariser cannot invoke a
+# skill to go and read the rules; the Stop gate can leave that to the agent, this
+# cannot. Reading the section out of SKILL.md keeps one source of truth, so editing the
+# skill changes what compaction preserves.
 set -uo pipefail
 IN=$(cat 2>/dev/null) || exit 0
 command -v jq >/dev/null 2>&1 || exit 0
@@ -50,21 +56,34 @@ MIN=$(( AGE / 60 ))
 
 # Reaching here means the Stop gate (handoff-context-gate.sh) did not get the doc
 # written before the window filled, so this is the last chance to shape what survives.
+# Assemble the optional block BEFORE the heredoc: a ${VAR:+...} that spans newlines
+# is a parse error inside one, and the failure mode is the whole instruction emitting
+# raw, unexpanded, which is worse than emitting nothing.
+SKILL="$HOME/.claude/skills/handoff/SKILL.md"
+RULES=""
+if [ -f "$SKILL" ]; then
+  R=$(sed -n '/^## What to write/,/^## Style/p' "$SKILL" | sed '$d')
+  [ -n "$R" ] && RULES="
+--- the document's own spec, from $SKILL. Preserve what it calls for ---
+
+$R"
+fi
+
 cat <<EOF
 HANDOFF DOC IS ${MIN} MIN STALE: ${DOC}
 
-This session maintains that handoff document, and the material it needs is in the
-conversation being compacted right now. Two requirements on the summary:
+This session maintains that handoff document. It is written from your summary, so
+whatever you drop cannot be recovered for it. Two requirements:
 
-1. Carry these forward at full fidelity, as values rather than as descriptions of
-   values: file paths written or edited, commit hashes, every numeric measurement
-   with what it measures and the command that produced it, every instruction,
-   rule or correction the user issued in their own wording, and everything named
-   as unfinished, deferred or blocked. The handoff gets written from this summary,
-   so a figure dropped here is a figure that is gone.
+1. Carry these forward as values rather than as descriptions of values: file paths
+   written or edited, commit hashes, every numeric measurement with what it measures
+   and the command that produced it, every instruction, rule or correction the user
+   issued in their own wording, and everything named as unfinished, deferred or
+   blocked.
 
 2. Make this the first line of the continuing session's next steps, verbatim:
    FIRST ACTION: the handoff doc ${DOC} is ${MIN} min stale. Run the handoff
    skill's WRITE procedure and update it from this summary before other work.
+${RULES}
 EOF
 exit 0
