@@ -33,6 +33,7 @@ same measurement against your own transcripts.
 | `outbound-email-guard.sh` | PreToolUse | PreToolUse guard for Bash: no email address on the protected domain may appear in |
 | `prompt-shape-guard.sh` | UserPromptSubmit | The other guards only police MY output. This one reads the USER's prompt and |
 | `scan-scope-guard.sh` | PreToolUse | PreToolUse(Bash): a recursive filesystem scan must be SCOPED, not bounded by a timeout. |
+| `scrub-inventory-guard.sh` | Stop, PostToolUse | Stop + PostToolUse(Write|Edit). Blocks an INVENTORY of what the sensitive data is. |
 | `self-invalidation-guard.sh` | Stop | Catches: "my earlier number was wrong / that makes the rest suspect" followed |
 | `service-state-guard.sh` | PreToolUse | PreToolUse guard for Bash: service lifecycle changes must be asked for. |
 | `soften-tics-display.sh` | - | MessageDisplay: rewrite verbal tics on screen instead of blocking the turn. |
