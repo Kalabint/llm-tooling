@@ -1,2 +1,13 @@
 __pycache__/
 *.pyc
+
+# Private values. local.env.example carries the key names.
+.claude/hooks/local.env
+
+# Private rules: the rule itself does not transfer or must not be published,
+# as distinct from a public rule holding a private value, which uses local.env.
+# Renaming a file is what makes it private, so the decision is visible in ls.
+*.private.sh
+*.private.md
+.claude/hooks/private/
+.claude/skills/private/

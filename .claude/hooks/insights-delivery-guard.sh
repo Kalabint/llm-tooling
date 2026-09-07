@@ -19,6 +19,7 @@
 # Fails OPEN on any error: a guard that blocks the session is worse than a miss.
 
 set -uo pipefail
+[ -f "$HOME/.claude/hooks/local.env" ] && . "$HOME/.claude/hooks/local.env"
 
 payload=$(cat 2>/dev/null) || exit 0
 [ -n "$payload" ] || exit 0
@@ -82,7 +83,7 @@ fi
 [ "$is_insights" = "1" ] || [ -n "$unreachable" ] || [ -n "$loopback" ] || exit 0
 
 r="UNREACHABLE DELIVERABLE."
-[ -n "$loopback" ] && r="$r Loopback URL handed over: \"$loopback\" - the user is NOT on this box, so localhost/127.0.0.1 resolves to THEIR machine, not the service. Give the LAN address of the host it runs on (this box is REDACTED-LAN-IP) [why: feedback_user_is_remote]."
+[ -n "$loopback" ] && r="$r Loopback URL handed over: \"$loopback\" - the user is NOT on this box, so localhost/127.0.0.1 resolves to THEIR machine, not the service. Give the LAN address of the host it runs on${KC_LAN_IP:+ (this box is $KC_LAN_IP)} [why: feedback_user_is_remote]."
 [ -n "$unreachable" ] && r="$r Local path handed over: \"$unreachable\" — the user is not on this box, file:// and /tmp render as \"Couldn't load this preview\" [why: feedback_user_is_remote]."
 if [ "$is_insights" = "1" ]; then
   r="$r Upload the report HTML to the LAN filehost and give that link instead:"

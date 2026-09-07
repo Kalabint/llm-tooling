@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Two refusals: a private-named file being staged, and identifying data in what is
+# staged. Bypass with --no-verify only if you have read what you are bypassing.
+set -uo pipefail
+priv=$(git diff --cached --name-only | grep -E '\.private\.(sh|md)$|/private/' || true)
+if [ -n "$priv" ]; then
+  echo "pre-commit: private files staged, refusing:" >&2
+  printf '  %s\n' $priv >&2
+  exit 1
+fi
+exec "$(git rev-parse --show-toplevel)/scripts/pii-sweep.sh" --staged

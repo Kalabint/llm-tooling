@@ -10,14 +10,14 @@
 # 22 with no follow-through in the same message. Rare enough that a notice costs
 # nothing; common enough to be worth seeing.
 #
+# ONE case blocks instead of noticing: pricing a fix as trivial and not applying
+# it. If the cost is stated as one line or one command, there is no deferral left
+# to reason about - the reasoning costs more than the fix. Measured: 68 messages
+# price a fix that way, 42 of them (62%) show no sign of applying it.
+#
 # NOTE: the notice text is scanned by no-superlative-guard like any other output,
 # so it must not itself contain banned phrasing. The first version ended with
-# an empty-deferral phrase that banned-patterns.sh itself blocks (PNT class).
-#
-# ONE branch blocks instead of noticing: a fix priced as trivial and not applied.
-# It is gated on the last user turn being an imperative - pricing an option in
-# answer to a question is describing, not deferring, and blocking it turns a
-# question into an edit.
+# "Say the word if you want it picked up now" - PNT in banned-patterns.sh:198.
 #
 # Fails OPEN on any error.
 
@@ -64,6 +64,12 @@ if [ -f "$tp" ]; then
   grep -qiE '^(can|could|would|should|is|are|does|do you|possible|any |what|which|why|how)\b|\?\s*$' <<<"$lastu" 2>/dev/null && asked=0
 fi
 
+if [ "$asked" = "1" ] && [ -n "$priced" ] && ! grep -qiE "$APPLIED" <<<"$t" 2>/dev/null; then
+  jq -nc --arg r "PRICED BUT NOT APPLIED: \"$priced\". You costed the fix and stopped. 68 messages in the corpus price a fix that way and 42 of them never apply it. If it is one line, the sentence explaining why you did not write it is longer than the line. Apply it now, then report. [why: feedback_no_deferring_doable_work]" \
+    '{decision:"block", reason:$r}'
+  exit 0
+fi
+
 DEFER="leaving (that|it|this) (for now|aside|alone)\
 |for a later session|in a later session|next session\
 |out of scope for now|for now, (i|we) (will|wont|won't)\
@@ -79,6 +85,6 @@ hit=$(grep -ioE "$DEFER" <<<"$t" 2>/dev/null | sort -u | head -2 | paste -sd'; '
 grep -qiE 'because|since it|until you|unless you|would need|blocked on|you have not asked|not requested' <<<"$t" 2>/dev/null && exit 0
 
 # No `decision` field: this passes. systemMessage renders in the UI.
-jq -nc --arg m "DEFERRED: \"$hit\" - nothing was done about it. Class B, 47 in corpus / 22 with no follow-through. See .claude/skills/no-self-report-omissions/" \
+jq -nc --arg m "DEFERRED: \"$hit\" - nothing was done about it. Class B, 47 in corpus / 22 with no follow-through. Rule: feedback_no_deferring_doable_work" \
   '{systemMessage:$m}'
 exit 0

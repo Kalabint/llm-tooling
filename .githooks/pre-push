@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Sweep everything being pushed. This is the check that should have run before
+# 22 commits accumulated unpushed with 11 identifying sites among them.
+set -uo pipefail
+root="$(git rev-parse --show-toplevel)"; rc=0
+while read -r _ lsha _ rsha; do
+  case "$lsha" in *[!0]*) ;; *) continue ;; esac          # branch deletion
+  case "$rsha" in *[!0]*) range="$rsha..$lsha" ;; *) range="$lsha" ;; esac
+  "$root/scripts/pii-sweep.sh" --range "$range" || rc=1
+done
+exit $rc
