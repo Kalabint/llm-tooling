@@ -51,7 +51,7 @@ hit=$(printf '%s' "$TEXT" | grep -ioE "${VERB}[^.]{0,200}" 2>/dev/null | while I
       done)
 [ -n "$hit" ] || exit 0
 
-R="SENSITIVE-DATA INVENTORY: \"$hit\". You are listing what the private data IS, inside an artefact that exists because it is private. That listing is the disclosure: it tells a reader what to look for and confirms it is there. State the size and the scope, then stop. \"The corpus is private and is not published\" is the whole statement. [why: feedback_sanitation_no_breadcrumbs]"
+R="SENSITIVE-DATA INVENTORY: \"$hit\". You are listing what the private data IS, inside an artefact that exists because it is private. That listing is the disclosure: it tells a reader what to look for and confirms it is there. State the scope and stop. [why: feedback_sanitation_no_breadcrumbs]"
 
 if [ "$EV" = "Stop" ]; then
   jq -nc --arg r "$R" '{decision:"block", reason:$r}'
