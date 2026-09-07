@@ -51,6 +51,19 @@ scrub() { printf '%s' "$1" | sed -E '
   s/[Cc]opyright \([Cc]\) [0-9]{4} .*$/Copyright/
 '; }
 
+# Applied after scrub(): collapse an identity line carrying the DECLARED address.
+# The repository's own committer identity is not a leak. It is what the owner chose to
+# publish under, it is a forwarding address, and it is on every commit by construction.
+# Read from git config rather than hardcoded, so a stranger's clone clears THEIR
+# identity and still fires on any other one, which is the case worth catching: a commit
+# made under the wrong account. KC_GIT_IDENTITY in local.env overrides it.
+GIT_ID="${KC_GIT_IDENTITY:-$(git config user.email 2>/dev/null)}"
+declared() {
+  [ -n "${GIT_ID:-}" ] || { cat; return; }
+  esc=$(printf '%s' "$GIT_ID" | sed 's/[].[^$*\\/]/\\&/g')
+  sed -E "s/^(author|committer) .*<${esc}>$/\1 self/"
+}
+
 mode="${1:-"--tree"}"; range="${2:-}"
 case "$mode" in
   --staged) src(){ git diff --cached --unified=0 | grep '^+' | grep -v '^+++'; } ;;
@@ -72,7 +85,7 @@ for c in "${CLASSES[@]}"; do
   name="${c%%|*}"; pat="${c#*|}"
   while IFS= read -r line; do
     [ -n "$line" ] || continue
-    printf '%s' "$(scrub "$line")" | grep -qiE "$pat" || continue
+    printf '%s' "$(scrub "$line" | declared)" | grep -qiE "$pat" || continue
     hits=$((hits+1))
     printf '  %-16s %s\n' "$name" "$(printf '%s' "$line" | cut -c1-120)"
   done < <(printf '%s\n' "$payload" | grep -iE "$pat" || true)
