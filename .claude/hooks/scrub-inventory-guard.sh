@@ -31,9 +31,11 @@ case "$EV" in
 esac
 [ -n "${TEXT:-}" ] || exit 0
 
-# Code spans and fences are stripped so a quoted example cannot trip this, matching
-# how the other guards behave.
-TEXT=$(printf '%s' "$TEXT" | sed -E 's/`[^`]*`//g; /^```/,/^```/d')
+# Fences FIRST, then inline spans. Reversing these is a silent bug: the inline rule
+# eats one backtick from each ``` marker, so the fence rule then matches nothing and
+# the fenced content is scanned as if it were prose. It fired on a fenced example of
+# what NOT to write.
+TEXT=$(printf '%s' "$TEXT" | sed -E '/^[[:space:]]*```/,/^[[:space:]]*```/d' | sed -E 's/`[^`]*`//g')
 
 VERB='(contain|contains|containing|carry|carries|carrying|hold|holds|holding|include|includes|including|full of|riddled with)'
 CAT='(home address|street address|GPS coordinate|GPS includ|coordinates includ|medical|health record|patient|diagnos|password|credential|api[ -]?key|secret key|access token|bank|IBAN|social security|passport|phone number|date of birth|personal data|database row|file content|private key)'
