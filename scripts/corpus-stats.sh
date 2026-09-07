@@ -76,6 +76,8 @@ for v in SUP TIC SYC EST PNT HAZ CMP EDIT PAR ADV ABS BRC OFFBOX VIRT MSG DASH; 
     grep -ioE ".{0,40}$pat.{0,30}" "$TXT" 2>/dev/null | head -"$SAMPLE" | sed 's/^/                 /'
   fi
 done
+# A high rate can mean the guard is noise, or that the corpus predates the rule and
+# you are looking at the baseline it was written against. --since separates the two.
 printf '\n%-14s %8s %8s   %s\n' TOTAL "$total" \
   "$(awk -v h="$total" -v m="$MSGS" 'BEGIN{printf "%.2f%%", m?100*h/m:0}')" \
   "counts overlap: one message can hit several classes"
