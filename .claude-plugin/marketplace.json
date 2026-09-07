@@ -1,0 +1,19 @@
+{
+  "name": "llm-tooling",
+  "owner": {
+    "name": "Kalabint",
+    "url": "https://github.com/Kalabint"
+  },
+  "metadata": {
+    "description": "Hooks and skills that block common LLM failure modes at the turn boundary",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "llm-tooling",
+      "description": "Stop and PreToolUse guards plus the rule skills",
+      "source": "./",
+      "strict": false
+    }
+  ]
+}

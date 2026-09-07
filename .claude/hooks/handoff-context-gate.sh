@@ -30,7 +30,7 @@ SID=$(j '.session_id'); case "$SID" in ""|null) exit 0;; esac
 TR=$(j '.transcript_path'); [ -f "${TR:-}" ] || exit 0
 
 CWD=$(j '.cwd'); case "$CWD" in ""|null) CWD="$(pwd)";; esac
-. "$HOME/.claude/hooks/handoff-doc.sh" 2>/dev/null || exit 0
+. "$(dirname "${BASH_SOURCE[0]}")/handoff-doc.sh" 2>/dev/null || exit 0
 DOC=$(handoff_doc "$SID" "$CWD") || exit 0
 
 CACHE="$HOME/.claude/handoff-window"

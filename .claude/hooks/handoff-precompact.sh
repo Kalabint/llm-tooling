@@ -41,7 +41,7 @@ SID=$(j '.session_id'); case "$SID" in ""|null) exit 0;; esac
 [ "$(j '.trigger')" = "manual" ] && [ -f "$HOME/.claude/handoff-pending/$SID" ] && exit 0
 
 CWD=$(j '.cwd'); case "$CWD" in ""|null) CWD="$(pwd)";; esac
-. "$HOME/.claude/hooks/handoff-doc.sh" 2>/dev/null || exit 0
+. "$(dirname "${BASH_SOURCE[0]}")/handoff-doc.sh" 2>/dev/null || exit 0
 DOC=$(handoff_doc "$SID" "$CWD") || exit 0
 
 # Fresh enough = written within the last 30 minutes of wall clock. A fresh doc

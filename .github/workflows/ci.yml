@@ -66,6 +66,17 @@ jobs:
           grep -q "13. Remote Network Interaction" LICENSE
           test -f NOTICE
 
+      - name: plugin manifests current
+        run: ./scripts/gen-plugin-manifest.sh --check
+
+      - name: plugin validates
+        run: |
+          if command -v claude >/dev/null 2>&1; then
+            claude plugin validate --strict .
+          else
+            echo "claude CLI unavailable on the runner; manifest shape checked by --check above"
+          fi
+
       - name: hook self-tests
         run: |
           fail=0

@@ -27,14 +27,20 @@ The Machine will forget. It's on the harness to work around this.
 Rules collected over my work with cc and constantly getting reminded that llms like to
 acknowledge things while changing absolutely nothing.
 
-Install is manual, into two different places. See the hooks README.
+As a plugin, which installs the hooks and the skills together:
+
+    /plugin marketplace add Kalabint/llm-tooling
+
+Or manually, if you want them in your own `~/.claude`:
 
     git clone git@github.com:Kalabint/llm-tooling.git
 
-Copy `.claude/hooks/` and `.claude/skills/` into `~/.claude/`, then merge
-`.claude/settings.hooks.json` into your `~/.claude/settings.json`. Copy
-`.claude/hooks/local.env.example` to `local.env` and fill in what applies; every
-key is optional and an unset one makes that check inert.
+Copy `.claude/hooks/` into `~/.claude/hooks/` and `skills/` into `~/.claude/skills/`, then
+merge `.claude/settings.hooks.json` into your `~/.claude/settings.json`.
+
+Either way, copy `.claude/hooks/local.env.example` to `~/.claude/hooks/local.env`
+and fill in what applies. Every key is optional and an unset one makes that check
+inert, so the harness runs unconfigured.
 
 ## Example
 

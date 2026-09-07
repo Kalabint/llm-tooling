@@ -1,0 +1,9 @@
+{
+  "name": "llm-tooling",
+  "description": "Hooks and skills that block common LLM failure modes at the turn boundary",
+  "version": "0.1.0",
+  "author": {
+    "name": "Kalabint",
+    "url": "https://github.com/Kalabint"
+  }
+}

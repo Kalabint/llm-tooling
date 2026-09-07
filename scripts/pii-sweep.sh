@@ -47,9 +47,13 @@ scrub() { printf '%s' "$1" | sed -E '
   s/\|[[:space:]:|-]*-{3,}[[:space:]:|-]*//g
   s#(https?://)?(www\.)?github\.com/[A-Za-z0-9_-]+#gh#g
   s#git@github\.com:[A-Za-z0-9_-]+/[A-Za-z0-9._-]+#gh#g
+  s#(marketplace add|plugin install)[[:space:]]+[A-Za-z0-9_-]+/[A-Za-z0-9._-]+#\1 gh#g
   s/[A-Za-z0-9_-]+@users\.noreply\.github\.com/gh/g
   s/^(author|committer) .*<gh>$/\1 gh/
   s/[Cc]opyright \([Cc]\) [0-9]{4} .*$/Copyright/
+  # No ^ anchor: --tree prefixes each line with file:lineno: and --staged with +,
+  # so an anchored rule silently never matches.
+  s/"(name|author|owner)":[[:space:]]*"[^"@/]*"/"\1": attrib/g
 '; }
 
 # Applied after scrub(): collapse an identity line carrying the DECLARED address.
