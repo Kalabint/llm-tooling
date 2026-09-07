@@ -24,7 +24,7 @@ NEG="$HOOKS/ban-corpus-negatives.txt"
 # silently stop the mirroring, then the known checkout names.
 REPO="${BAN_REPO:-}"
 if [ -z "$REPO" ]; then
-  for d in "$HOME/LLM-Tooling" "$HOME/ChatGPT-Primer"; do
+  for d in "$HOME/llm-tooling" "$HOME/LLM-Tooling" "$HOME/ChatGPT-Primer"; do
     [ -d "$d/.git" ] && { REPO="$d"; break; }
   done
 fi
