@@ -392,6 +392,12 @@ MSG="$MSG"'|\bthe part worth (your )?(attention|noting|reading)\b'
 MSG="$MSG"'|\bwhat (actually|really) matters\b|\bthe (thing|one|bit) that (actually |really )?matters\b'
 MSG="$MSG"'|\bthe crux\b|\bdeserves (special |particular )?emphasis\b'
 
+# 17c. DASH -- the em dash, in my own prose. See feedback_no_llmisms. A semicolon, a colon, a comma, a
+# period or a restructure always exists. Written as a literal U+2014 and as the
+# LaTeX --- ligature, since the artefacts here are .tex.
+DASH=$'\u2014'
+DASH="$DASH"'|(^|[^-])---([^-]|$)'
+
 # 16. OFFBOX -- a quantitative COMPARISON whose other side is not measurable from
 # this box. 2026-09-05: "the payload is 11 MB; on a phone that plausibly exceeds
 # the 570-790 ms of compute". The 11 MB was measured, the compute was measured,
