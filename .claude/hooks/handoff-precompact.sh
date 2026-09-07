@@ -13,16 +13,12 @@
 #
 # so hook text and any /compact argument merge rather than one dropping the other.
 #
-# WHY THIS FILE CHANGED. It used to block. That was reasoned from a real
-# observation, that PreCompact has no hookSpecificOutput variant (the union in
-# 2.1.260 covers 22 events and PreCompact is not one), and a wrong inference from
-# it, that blocking was therefore the only lever. Stdout was always the lever.
-# The cost of the mistake: a block is one-shot per session, so the held
-# compaction just came back and went through with the doc still stale, and in
-# between nothing drove the write except the human noticing a stderr line and
-# relaying it. Held twice, wrote never.
+# GOTCHA. PreCompact has no hookSpecificOutput variant, so it looks write-only. It is
+# not: stdout is the channel, and exiting 0 is what sends it. Blocking here (exit 2)
+# reaches the human's stderr and never the model, and the block is one-shot per
+# session, so a held compaction returns and passes anyway.
 #
-# This file is now the third line of defence and the weakest, because by the time it
+# This file is the third line of defence and the weakest, because by the time it
 # runs the window is already full. handoff-context-gate.sh asks for the doc at a token
 # threshold with room to spare, and handoff-expansion.sh converts a manual /compact
 # into a handoff turn. Both of those can get a doc written. This one can only shape

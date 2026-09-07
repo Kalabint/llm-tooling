@@ -33,8 +33,7 @@ esac
 
 # Fences FIRST, then inline spans. Reversing these is a silent bug: the inline rule
 # eats one backtick from each ``` marker, so the fence rule then matches nothing and
-# the fenced content is scanned as if it were prose. It fired on a fenced example of
-# what NOT to write.
+# the fenced content is scanned as if it were prose.
 TEXT=$(printf '%s' "$TEXT" | sed -E '/^[[:space:]]*```/,/^[[:space:]]*```/d' | sed -E 's/`[^`]*`//g')
 
 VERB='(contain|contains|containing|carry|carries|carrying|hold|holds|holding|include|includes|including|full of|riddled with)'

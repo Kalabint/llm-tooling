@@ -1,22 +1,20 @@
 #!/usr/bin/env bash
-# Regenerate .claude/hooks/README.md from the tree. The hand-written one drifted far
-# enough that most scripts went unnamed and a stranger could not reconstruct the
-# active set. A generated table cannot drift; CI runs this with --check.
+# Regenerate .claude/hooks/README.md from the tree, so the listing cannot drift from
+# the scripts that exist. CI runs this with --check.
 #
-# Each row is: script, the lifecycle event it is wired to, and its one-line purpose,
-# taken from the first comment line after the shebang. Wiring comes from
-# settings.json, which is not tracked, so an absent one yields dashes.
+# Each row is: script, the lifecycle events it is wired to, and its one-line purpose,
+# taken from the first comment line after the shebang. Events come from
+# .claude/settings.hooks.json, which is TRACKED, so --check gives the same answer on
+# any machine including CI. Without it every event reads as a dash.
 #
-#   gen-hooks-readme.sh           rewrite the file
-#   gen-hooks-readme.sh --check   exit 1 if it would change
+#   gen-hooks-readme.sh           rewrite the README, refreshing the tracked wiring
+#                                 from $KC_SETTINGS or ~/.claude/settings.json first
+#   gen-hooks-readme.sh --check   exit 1 if the README would change; reads only
+#                                 tracked files, so it never touches live settings
 set -uo pipefail
 root="$(git rev-parse --show-toplevel)"; cd "$root"
 OUT=".claude/hooks/README.md"
-# The wiring is TRACKED. Deriving it from the live settings file made --check fail
-# deterministically in CI, where that file does not exist: every event rendered as a
-# dash and the diff against the committed README was guaranteed. The tracked copy is
-# the install JSON a reader needs anyway, and it holds command strings only.
-WIRING=".claude/settings.hooks.json"
+WIRING=".claude/settings.hooks.json"   # tracked; also the install JSON a reader needs
 LIVE="${KC_SETTINGS:-$HOME/.claude/settings.json}"
 
 event_of() {  # $1 = basename; prints the events it is wired to, or a dash
