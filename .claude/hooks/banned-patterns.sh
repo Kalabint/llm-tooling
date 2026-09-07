@@ -396,7 +396,13 @@ MSG="$MSG"'|\bthe crux\b|\bdeserves (special |particular )?emphasis\b'
 # period or a restructure always exists. Written as a literal U+2014 and as the
 # LaTeX --- ligature, since the artefacts here are .tex.
 DASH=$'\u2014'
-DASH="$DASH"'|(^|[^-])---([^-]|$)'
+# The LaTeX ligature, but ONLY where it is doing an em dash's job: between two
+# words. Bounded by anything else it is syntax, not punctuation, and the earlier
+# (^|[^-])---([^-]|$) blocked all of it. Markdown table separators (|---|), bash
+# defaults (${1:---tree}), frontmatter and horizontal rules at line start, and the
+# --- divider this guard's own message asks for. Numeric ranges (10--20) and the
+# comment marker (# X -- Y) are two dashes and never matched either way.
+DASH="$DASH"'|[[:alnum:],)][[:space:]]?---[[:space:]]?[[:alnum:](]'
 
 # 16. OFFBOX -- a quantitative COMPARISON whose other side is not measurable from
 # this box. 2026-09-05: "the payload is 11 MB; on a phone that plausibly exceeds
