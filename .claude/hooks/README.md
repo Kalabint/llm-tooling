@@ -10,7 +10,7 @@ Every value that would identify a machine lives in `local.env`, which is gitigno
 `local.env.example` lists the keys. Unset keys make the affected check inert rather
 than making it misfire, so a fresh clone runs without configuration.
 
-same measurement against your own transcripts.
+`scripts/corpus-stats.sh` to get the same table for your own transcripts.
 
 | script | event | purpose |
 |-|-|-|

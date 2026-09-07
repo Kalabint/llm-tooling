@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 # Measure how often each guard would fire, against YOUR transcripts.
 #
-# claim becomes testable without anyone disclosing anything: run it and get your
-# own numbers. If a guard fires on 30% of your messages it is noise for you,
-# whatever it did for the author.
+# method rather than the data: run it and get your own numbers. If a guard fires on
+# 30% of your messages it is noise for you, whatever it did for the author.
 #
 # Nothing leaves the machine and no transcript text is printed unless you pass
 # --sample, which exists so you can confirm a pattern matches what you expect.

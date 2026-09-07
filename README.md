@@ -42,10 +42,13 @@ Install is manual, into two different places. See the hooks README.
 
 ## Repository Contents
 
-- [`.claude/skills/`](.claude/skills/): 19 skills. Start with `discriminator`,
+- [`.claude/skills/`](.claude/skills/): the skills. Start with `discriminator`,
   `no-invented-hazards`, `check-dont-assume`.
-- [`.claude/hooks/`](.claude/hooks/): 9 hooks and the shared pattern file, with install
-  JSON in [its README](.claude/hooks/README.md). Needs `bash` and `jq`.
+- [`.claude/hooks/`](.claude/hooks/): the hooks and the shared pattern file, listed with
+  their lifecycle events in [its README](.claude/hooks/README.md), which is generated.
+  Needs `bash` and `jq`.
+- [`scripts/`](scripts/): `pii-sweep.sh` refuses to publish identifying data and runs from
+  the git hooks; `corpus-stats.sh` measures how often each guard would fire against your
 - [`universal_task_system_instructions.txt`](universal_task_system_instructions.txt): the
   ChatGPT primer — give it a query, it lists topics, selects an overqualified role, and
   answers from that perspective.
