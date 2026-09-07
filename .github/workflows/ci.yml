@@ -1,0 +1,76 @@
+name: ci
+
+# Everything here already ran by hand during development; this makes it run for a
+# stranger's pull request too.
+#
+# The PII sweep is deliberately WEAKER in CI than locally. Its username and domain
+# classes read KC_USER_NAME and KC_MAIL_DOMAIN from local.env, which is gitignored
+# and absent here, so those two classes are skipped. Putting the values in this file
+# to "strengthen" CI would publish exactly what the sweep exists to keep out. The
+# classes that need no configuration still run: home paths, e-mail addresses,
+# private IPs, GPS coordinates and credential shapes.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # pii-sweep --range walks history
+
+      - name: shell syntax
+        run: |
+          fail=0
+          while IFS= read -r f; do
+            bash -n "$f" || { echo "::error file=$f::bash -n failed"; fail=1; }
+          done < <(find . -name '*.sh' -not -path './.git/*')
+          exit $fail
+
+      - name: python syntax
+        run: |
+          mapfile -t py < <(find . -name '*.py' -not -path './.git/*')
+          [ ${#py[@]} -eq 0 ] || python3 -m py_compile "${py[@]}"
+
+      - name: executable bits
+        run: |
+          fail=0
+          while IFS= read -r f; do
+            [ -x "$f" ] || { echo "::error file=$f::not executable"; fail=1; }
+          done < <(find .claude/hooks .githooks scripts -name '*.sh' 2>/dev/null)
+          exit $fail
+
+      - name: hooks README is current
+        run: ./scripts/gen-hooks-readme.sh --check
+
+      - name: pii sweep, tracked tree
+        run: ./scripts/pii-sweep.sh --tree
+
+      - name: pii sweep, every commit
+        run: |
+          fail=0
+          for c in $(git rev-list HEAD); do
+            git rev-parse -q --verify "$c^" >/dev/null 2>&1 || continue
+            ./scripts/pii-sweep.sh --range "$c^..$c" >/dev/null 2>&1 || {
+              echo "::error::identifying data in $(git log -1 --format='%h %s' "$c")"; fail=1; }
+          done
+          exit $fail
+
+      - name: licence present and intact
+        run: |
+          grep -q "GNU AFFERO GENERAL PUBLIC LICENSE" LICENSE
+          grep -q "13. Remote Network Interaction" LICENSE
+          test -f NOTICE
+
+      - name: hook self-tests
+        run: |
+          fail=0
+          for f in .claude/hooks/*.sh; do
+            grep -q -- '--selftest' "$f" || continue
+            echo "== $f"; bash "$f" --selftest || fail=1
+          done
+          exit $fail

@@ -57,9 +57,11 @@ fi
 payload=$(cat 2>/dev/null) || exit 0
 [ -n "$payload" ] || exit 0
 
-# Site values live outside this file so the logic can be published.
-LOCAL_ENV="$(dirname "${BASH_SOURCE[0]}")/local/env"
-[ -r "$LOCAL_ENV" ] && . "$LOCAL_ENV" 2>/dev/null
+# Site values live outside this file so the logic can be published. local.env is
+# the one config file the hooks read; KC_COMPOSE_PIN_FILE unset means the guard
+# still fires but cannot name the project to pin to.
+[ -f "$HOME/.claude/hooks/local.env" ] && . "$HOME/.claude/hooks/local.env" 2>/dev/null
+COMPOSE_PIN_FILE="${KC_COMPOSE_PIN_FILE:-${COMPOSE_PIN_FILE:-}}"
 
 HOOK_PAYLOAD="$payload" COMPOSE_PIN_FILE="${COMPOSE_PIN_FILE:-}" python3 - << 'PY'
 import json, os, re, sys

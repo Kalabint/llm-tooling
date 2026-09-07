@@ -36,7 +36,18 @@ CLASSES=(
   "credential|(\\bsk-[A-Za-z0-9]{16}|\\bghp_[A-Za-z0-9]{16}|\\bAKIA[0-9A-Z]{8}|BEGIN [A-Z ]*PRIVATE KEY)"
 )
 # 127.0.0.1 needs no entry: the IP class only matches 10.x and 192.168.x.
-scrub() { printf '%s' "$1" | sed -E 's/traccar\.example//g; s/\|[[:space:]:|-]*-{3,}[[:space:]:|-]*//g'; }
+#
+# The account handle is deleted where it is INHERENT to publishing: a github.com
+# URL and the copyright line. The repo lives at github.com/<handle>/<repo>, so the
+# handle cannot be secret while the repo is public, and a licence needs a named
+# holder. What the username class is actually for is the unix name in a path, and
+# /home/<name> and -home-<name>-<project> still match after this deletion.
+scrub() { printf '%s' "$1" | sed -E '
+  s/traccar\.example//g
+  s/\|[[:space:]:|-]*-{3,}[[:space:]:|-]*//g
+  s#(https?://)?(www\.)?github\.com/[A-Za-z0-9_-]+#gh#g
+  s/[Cc]opyright \([Cc]\) [0-9]{4} .*$/Copyright/
+'; }
 
 mode="${1:-"--tree"}"; range="${2:-}"
 case "$mode" in
