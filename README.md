@@ -1,4 +1,4 @@
-# LLM-Tooling (former ChatGPT-Primer)
+# llm-tooling (former ChatGPT-Primer)
 
 This repo contains claude code tooling and my old ChatGPT Primer.
 
@@ -28,6 +28,13 @@ Rules collected over my work with cc and constantly getting reminded that llms l
 acknowledge things while changing absolutely nothing.
 
 Install is manual, into two different places. See the hooks README.
+
+    git clone git@github.com:Kalabint/llm-tooling.git
+
+Copy `.claude/hooks/` and `.claude/skills/` into `~/.claude/`, then merge
+`.claude/settings.hooks.json` into your `~/.claude/settings.json`. Copy
+`.claude/hooks/local.env.example` to `local.env` and fill in what applies; every
+key is optional and an unset one makes that check inert.
 
 ## Example
 
