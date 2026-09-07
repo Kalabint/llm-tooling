@@ -53,8 +53,13 @@ mode="${1:-"--tree"}"; range="${2:-}"
 case "$mode" in
   --staged) src(){ git diff --cached --unified=0 | grep '^+' | grep -v '^+++'; } ;;
   --range)  [ -n "$range" ] || { echo "usage: $0 --range A..B" >&2; exit 2; }
-            src(){ git diff "$range" --unified=0 | grep '^+' | grep -v '^+++'; } ;;
-  --tree)   src(){ git ls-files -z | xargs -0 grep -nH '' 2>/dev/null; } ;;
+            src(){ git diff "$range" --unified=0 | grep '^+' | grep -v '^+++'
+                   # Commit METADATA is a separate surface. A diff sweep never sees
+                   # the author and committer identity, which is attached to every
+                   # commit and travels with a push. Feed it through the same classes.
+                   git log --format='author %an <%ae>%ncommitter %cn <%ce>' "$range"; } ;;
+  --tree)   src(){ git ls-files -z | xargs -0 grep -nH '' 2>/dev/null
+                   git log --format='author %an <%ae>%ncommitter %cn <%ce>' HEAD; } ;;
   *) echo "usage: $0 [--staged|--range A..B|--tree]" >&2; exit 2 ;;
 esac
 
