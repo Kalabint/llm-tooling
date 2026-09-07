@@ -1,4 +1,4 @@
-# llm-tooling (former ChatGPT-Primer)
+# LLM-Tooling (former ChatGPT-Primer)
 
 This repo contains claude code tooling and my old ChatGPT Primer.
 
