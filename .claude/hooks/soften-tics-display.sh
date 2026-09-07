@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
 # MessageDisplay: rewrite verbal tics on screen instead of blocking the turn.
 #
-# WHY THIS EXISTS. The Stop guard blocks and forces a full re-emit. That is the
-# right price for a claim that is unverified (PAR, ADV, HAZ, CMP) — the content
-# has to change. It is the wrong price for a pure tic, where the word IS the whole
-# problem: a re-emit costs an entire turn to delete two words. Those move here.
+# The Stop guard blocks and forces a full re-emit. That is the right price for an
+# unverified claim (PAR, ADV, HAZ, CMP), where the content has to change. It is the
+# wrong price for a pure tic, where the word IS the whole problem and a re-emit
+# spends a turn deleting two words. Those classes are handled here instead.
 #
-# WHY THE PREVIOUS ATTEMPT FAILED. redact-banned-display.sh was wired and did
-# nothing; no reason was recorded. The input field is `delta` — the streaming
-# chunk, not the message. "worth noting" arrives as "worth" then " noting" and a
-# per-delta regex never sees it. This carries a tail across deltas so a phrase
-# spanning a chunk boundary still matches.
+# GOTCHA. The input field is `delta`, the streaming chunk, not the finished message.
+# "worth noting" arrives as "worth" then " noting", so a per-delta regex never sees
+# the phrase. This carries a tail across deltas so a match spanning a chunk boundary
+# still fires. A MessageDisplay hook that matches per delta silently does nothing.
 #
 # LIMIT, STATED. Display-only: the transcript and what Claude re-reads keep the
 # original. The tic is hidden from the reader, not removed from the writer — so a

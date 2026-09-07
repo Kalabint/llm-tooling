@@ -411,7 +411,6 @@ DEFEND="$DEFEND"'|\bshould not be (read|taken|understood) as\b'
 DEFEND="$DEFEND"'|\bdoes not (claim|purport|pretend) to\b'
 DEFEND="$DEFEND"'|\bnot (to be )?confused with\b'
 DEFEND="$DEFEND"'|\bthat is the whole (provenance|story|point|answer)\b'
-DEFEND="$DEFEND"'|\brather than letting\b'
 
 # 17c. DASH -- the em dash. The user's rule since 2026-08-22 (feedback_no_sycophancy), A semicolon, a colon, a comma, a
 # period or a restructure always exists. Written as a literal U+2014 and as the
