@@ -12,11 +12,16 @@
 set -uo pipefail
 root="$(git rev-parse --show-toplevel)"; cd "$root"
 OUT=".claude/hooks/README.md"
-SETTINGS="${KC_SETTINGS:-$HOME/.claude/settings.json}"
+# The wiring is TRACKED. Deriving it from the live settings file made --check fail
+# deterministically in CI, where that file does not exist: every event rendered as a
+# dash and the diff against the committed README was guaranteed. The tracked copy is
+# the install JSON a reader needs anyway, and it holds command strings only.
+WIRING=".claude/settings.hooks.json"
+LIVE="${KC_SETTINGS:-$HOME/.claude/settings.json}"
 
 event_of() {  # $1 = basename; prints the events it is wired to, or a dash
-  [ -f "$SETTINGS" ] || { printf -- '-'; return; }
-  python3 - "$SETTINGS" "$1" <<'PY'
+  [ -f "$WIRING" ] || { printf -- '-'; return; }
+  python3 - "$WIRING" "$1" <<'PY'
 import json, sys
 try: d = json.load(open(sys.argv[1]))
 except Exception: print("-"); raise SystemExit
@@ -62,5 +67,17 @@ if [ "${1:-}" = "--check" ]; then
   fi
   echo "hooks README current"; exit 0
 fi
+# Refresh the tracked wiring from the live settings first, so one command keeps both
+# current. Absent live settings just leaves the tracked copy alone.
+if [ -f "$LIVE" ]; then
+  python3 - "$LIVE" "$WIRING" <<'PY'
+import json, sys
+live, out = sys.argv[1], sys.argv[2]
+try: d = json.load(open(live))
+except Exception: raise SystemExit
+json.dump({"hooks": d.get("hooks", {})}, open(out, "w"), indent=2, sort_keys=True)
+open(out, "a").write("\n")
+PY
+fi
 gen > "$OUT"
-echo "wrote $OUT"
+echo "wrote $OUT and $WIRING"

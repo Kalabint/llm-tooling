@@ -1,0 +1,195 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "bash ~/.claude/hooks/no-superlative-guard.sh",
+            "timeout": 5,
+            "type": "command"
+          },
+          {
+            "command": "bash ~/.claude/hooks/scrub-inventory-guard.sh",
+            "type": "command"
+          }
+        ],
+        "matcher": "Write|Edit"
+      },
+      {
+        "hooks": [
+          {
+            "command": "bash ~/.claude/hooks/handoff-record.sh",
+            "timeout": 5,
+            "type": "command"
+          }
+        ],
+        "matcher": "Write|Edit"
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "command": "bash ~/.claude/hooks/handoff-precompact.sh",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "bash ~/.claude/hooks/handoff-mark.sh",
+            "type": "command"
+          }
+        ],
+        "matcher": "Skill"
+      },
+      {
+        "hooks": [
+          {
+            "command": "bash ~/.claude/hooks/compose-pin-guard.sh",
+            "type": "command"
+          },
+          {
+            "command": "bash ~/.claude/hooks/outbound-email-guard.sh",
+            "type": "command"
+          },
+          {
+            "command": "bash ~/.claude/hooks/sql-cost-guard.sh",
+            "timeout": 10,
+            "type": "command"
+          },
+          {
+            "command": "bash ~/.claude/hooks/scan-scope-guard.sh",
+            "type": "command"
+          },
+          {
+            "command": "bash ~/.claude/hooks/service-state-guard.sh",
+            "type": "command"
+          },
+          {
+            "command": "bash ~/.claude/hooks/background-job-guard.sh",
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      },
+      {
+        "hooks": [
+          {
+            "command": "bash ~/.claude/hooks/subagent-brief-guard.sh",
+            "timeout": 5,
+            "type": "command"
+          }
+        ],
+        "matcher": "Agent|Task"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "bash ~/.claude/hooks/handoff-load.sh",
+            "type": "command"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "command": "bash ~/.claude/hooks/memory-audit-due.sh",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "bash ~/.claude/hooks/handoff-context-gate.sh",
+            "type": "command"
+          },
+          {
+            "command": "bash ~/.claude/hooks/no-superlative-guard.sh",
+            "timeout": 5,
+            "type": "command"
+          },
+          {
+            "command": "bash ~/.claude/hooks/scrub-inventory-guard.sh",
+            "type": "command"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "command": "bash ~/.claude/hooks/insights-delivery-guard.sh",
+            "timeout": 5,
+            "type": "command"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "command": "bash ~/.claude/hooks/self-invalidation-guard.sh",
+            "timeout": 5,
+            "type": "command"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "command": "bash ~/.claude/hooks/deferral-notice.sh",
+            "timeout": 5,
+            "type": "command"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "command": "bash ~/.claude/hooks/unreferenced-flag-guard.sh",
+            "timeout": 5,
+            "type": "command"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "command": "bash ~/.claude/hooks/announce-then-stop-guard.sh",
+            "timeout": 5,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "UserPromptExpansion": [
+      {
+        "hooks": [
+          {
+            "command": "bash ~/.claude/hooks/handoff-expansion.sh",
+            "timeout": 5,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "command": "bash ~/.claude/hooks/prompt-shape-guard.sh",
+            "timeout": 5,
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  }
+}
