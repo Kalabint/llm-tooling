@@ -3,6 +3,9 @@ __pycache__/
 
 # Private values. local.env.example carries the key names.
 .claude/hooks/local.env
+# Predates local.env and is still read by compose-pin-guard. Ignored because an
+# unignored one would have committed the domain and the allowed-hosts list.
+.claude/hooks/local/
 
 # Private rules: the rule itself does not transfer or must not be published,
 # as distinct from a public rule holding a private value, which uses local.env.
