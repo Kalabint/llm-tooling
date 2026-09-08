@@ -15,7 +15,13 @@ SRC=$(j '.source'); case "$SRC" in ""|null) SRC="startup";; esac
 
 . "$(dirname "${BASH_SOURCE[0]}")/handoff-doc.sh" 2>/dev/null || exit 0
 DOC=$(handoff_doc "$SID" "$CWD") || exit 0
-CONTENT=$(cat "$DOC" 2>/dev/null) || exit 0
+# Superseded versions live as numbered siblings under .handoff-history/<doc-name>/,
+# never inline: history is not current state and must not cost context at session
+# start. The awk cut stays for any doc still carrying the older inline archive.
+CUT=$(awk '/^## Superseded versions$/{exit} {print}' "$DOC" 2>/dev/null)
+HDIR="$(dirname "$DOC")/.handoff-history/$(basename "$DOC" .md)"
+NVERS=$(ls -1 "$HDIR"/v*.md 2>/dev/null | wc -l)
+CONTENT="$CUT"
 [ -n "$CONTENT" ] || exit 0
 printf '%s\n' "$DOC" > "$HOME/.claude/handoff-active/$SID" 2>/dev/null
 
@@ -31,12 +37,12 @@ BYTES=$(stat -c %s "$DOC" 2>/dev/null || echo 0)
 # the gated path gets the cheap load and an ungated compaction gets the full one.
 KEEP_RE='^## (Files to read|Open[ /]|Current live state|Durable gotchas)'
 if [ "$SRC" = "compact" ] && [ "$AGE" -lt 30 ]; then
-  BODY=$(awk -v keep="$KEEP_RE" '
+  BODY=$(printf '%s\n' "$CONTENT" | awk -v keep="$KEEP_RE" '
     /^## / { on = ($0 ~ keep) }
     !seen && /^## / { seen = 1 }          # everything before the first ## is the header
     !seen || on { print }
-  ' "$DOC" 2>/dev/null)
-  DROPPED=$(awk -v keep="$KEEP_RE" '/^## / && $0 !~ keep { sub(/^## /,""); print "  - " $0 }' "$DOC" 2>/dev/null)
+  ' 2>/dev/null)
+  DROPPED=$(printf '%s\n' "$CONTENT" | awk -v keep="$KEEP_RE" '/^## / && $0 !~ keep { sub(/^## /,""); print "  - " $0 }' 2>/dev/null)
   [ -n "$BODY" ] || exit 0
   jq -nc --arg ctx "SESSION HANDOFF (partial) from $DOC — ${BYTES} B total, written ${AGE} min ago.
 Post-compaction start: the narrative sections are omitted because the compact summary above
@@ -49,7 +55,7 @@ $BODY" '{hookSpecificOutput:{hookEventName:"SessionStart",additionalContext:$ctx
   exit 0
 fi
 
-PREFIX="SESSION HANDOFF loaded from $DOC (source=$SRC, written ${AGE} min ago). Read it.
+PREFIX="SESSION HANDOFF loaded from $DOC (source=$SRC, written ${AGE} min ago, ${NVERS} superseded version(s) in $HDIR, not shown). Read it.
 For any factual claim, prefer firsthand source (code/git) over this doc — it can be stale."
 jq -nc --arg ctx "$PREFIX"$'\n\n'"$CONTENT" \
   '{hookSpecificOutput:{hookEventName:"SessionStart",additionalContext:$ctx}}'
