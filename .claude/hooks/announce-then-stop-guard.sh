@@ -41,7 +41,7 @@ text=$(jq -r '.last_assistant_message // empty' <<<"$payload" 2>/dev/null | head
 # Only the final paragraph is a real stop. (Gate is default-off; see paragraph-gate.sh.)
 if [ -f "$(dirname "${BASH_SOURCE[0]}")/.paragraph-gate-on" ] || [ "${PARAGRAPH_GATE:-0}" = "1" ]; then
   _last=$(printf '%s' "$text" | grep -vE '^[[:space:]]*$' | tail -1 | tr -d '[:space:]')
-  [ "$_last" = "EndAnswer" ] || exit 0
+  [ "$_last" = "[¤]" ] || exit 0
 fi
 [ -n "${text:-}" ] || exit 0
 

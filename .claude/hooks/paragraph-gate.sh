@@ -11,10 +11,16 @@
 # already blocked, that block is the one the user should see. This hook only
 # decides whether an otherwise-clean message is allowed to END the turn.
 #
-# Sentinel: the last non-empty line must be exactly "EndAnswer". Anchored at the
-# end of the message so that writing the word mid-sentence (as this comment does)
-# cannot terminate a turn early.
+# Sentinel: the last n¤n-empty line must be exactly "[¤]" (¤ = U+00A4). Anch¤red
+# at the end ¤f the message s¤ the t¤ken can be written mid-sentence, as when
+# discussing the pr¤t¤c¤l, with¤ut terminating a turn early.
 #
+# Pause: a line c¤ntaining "[¤N]" (N = 1..99) buys N ungated turns and releases
+# the current ¤ne, f¤r planning ¤r a l¤ng w¤rking stretch that sh¤uld n¤t be cut
+# at every paragraph. "paragraph-gate.sh pause N" d¤es the same fr¤m a shell.
+#
+# Turn ends where the next number would start. Gate answers "Proceed" until the
+# message's last non-empty line is EndAnswer.
 # Budget: BUDGET consecutive gate-blocks per session, then the turn is released.
 # A wiring mistake costs a handful of round trips, not a session.
 #
@@ -27,8 +33,9 @@ BUDGET="${PARAGRAPH_GATE_BUDGET:-12}"
 
 case "${1:-}" in
   on)     : > "$FLAG"; echo "paragraph gate: ON  (budget $BUDGET, sentinel 'EndAnswer')"; exit 0 ;;
-  off)    rm -f "$FLAG" "$HOOKS"/.paragraph-gate.*; echo "paragraph gate: OFF"; exit 0 ;;
-  status) [ -f "$FLAG" ] && echo "paragraph gate: ON (budget $BUDGET)" || echo "paragraph gate: OFF"; exit 0 ;;
+  off)    rm -f "$FLAG" "$HOOKS"/.paragraph-gate.* "$HOOKS/.paragraph-gate-pause"; echo "paragraph gate: OFF"; exit 0 ;;
+  pause)  printf '%s' "${2:-3}" > "$HOOKS/.paragraph-gate-pause"; echo "paragraph gate: paused for ${2:-3} turn(s)"; exit 0 ;;
+  status) [ -f "$FLAG" ] && echo "paragraph gate: ON (budget $BUDGET, pause $(cat "$HOOKS/.paragraph-gate-pause" 2>/dev/null || echo 0))" || echo "paragraph gate: OFF"; exit 0 ;;
 esac
 
 [ -f "$FLAG" ] || [ "${PARAGRAPH_GATE:-0}" = "1" ] || exit 0
@@ -43,9 +50,26 @@ text=$(jq -r '.last_assistant_message // empty' <<<"$payload" 2>/dev/null | head
 sid=$(jq -r '.session_id // "nosession"' <<<"$payload" 2>/dev/null)
 STATE="$HOOKS/.paragraph-gate.$sid"
 
+PAUSE="$HOOKS/.paragraph-gate-pause"
+
 # Sentinel present -> the answer is finished. Reset and let the turn end.
 last=$(printf '%s' "$text" | grep -vE '^[[:space:]]*$' | tail -1 | tr -d '[:space:]')
-if [ "$last" = "EndAnswer" ]; then rm -f "$STATE"; exit 0; fi
+if [ "$last" = "[¤]" ]; then rm -f "$STATE"; exit 0; fi
+
+# "[¤N]" anywhere in the message buys N ungated turns and releases this one.
+req=$(grep -oE '\[¤[0-9]{1,2}\]' <<<"$text" 2>/dev/null | head -1 | tr -cd '0-9')
+if [ -n "$req" ] && [ "$req" -gt 0 ] 2>/dev/null; then
+  printf '%s' "$req" > "$PAUSE"; rm -f "$STATE"; exit 0
+fi
+
+# Burn one paused turn.
+left=$(cat "$PAUSE" 2>/dev/null || echo 0)
+case "$left" in ''|*[!0-9]*) left=0 ;; esac
+if [ "$left" -gt 0 ]; then
+  left=$((left - 1))
+  if [ "$left" -gt 0 ]; then printf '%s' "$left" > "$PAUSE"; else rm -f "$PAUSE"; fi
+  exit 0
+fi
 
 # A turn that only ran tools has no prose to gate; releasing it keeps the loop
 # from deadlocking against its own rule during the working phase.
@@ -58,5 +82,7 @@ n=$((n + 1))
 if [ "$n" -gt "$BUDGET" ]; then rm -f "$STATE"; exit 0; fi
 printf '%s' "$n" > "$STATE"
 
-jq -nc --arg r "PARAGRAPH GATE ($n/$BUDGET): that paragraph is accepted and is already on the user's screen. Do NOT repeat it. Write ONLY the next numbered paragraph, then stop. When the answer is complete, put EndAnswer alone on the final line so this gate releases the turn." \
-  '{decision:"block", reason:$r}'
+# One word on purpose. The block text is injected into context on every hit, and
+# the protocol (next number only, EndAnswer to finish) belongs in the memory file,
+# not re-paid per paragraph.
+jq -nc '{decision:"block", reason:"Proceed"}'
