@@ -87,5 +87,7 @@ printf '%s' "$n" > "$STATE"
 # disable the gate. So the wire value stays "block" and the NAME of the event lives
 # in the reason, which is the string the user and the next turn actually read.
 # "Proceed" is his wording: the harness refuses the stop, the reason says carry on.
-# Short on purpose: it is injected on every paragraph.
-jq -nc '{decision:"block", reason:"Proceed: next number, or [¤] alone on the last line to end."}'
+# Bare on purpose: this string is re-injected on EVERY paragraph, so the protocol
+# (next number only, [¤] to finish) lives in feedback-paragraph-gate.md and is read
+# once per session instead of re-paid per block.
+jq -nc '{decision:"block", reason:"Proceed"}'
