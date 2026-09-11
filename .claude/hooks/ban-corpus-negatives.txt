@@ -23,3 +23,6 @@ the ingestor discards klass at ingestor.sql:62-72
 I read five of the twenty-two files
 UNVERIFIED: attributions recalled, not checked this session
 committed to the repo, /tmp copy deleted
+# technical uses of reopen/without reopening — must never be banned (2026-09-11)
+The pool is not reopening the connection after a DB restart.
+Idempotent: it applies without reopening the file.
