@@ -82,7 +82,7 @@ n=$((n + 1))
 if [ "$n" -gt "$BUDGET" ]; then rm -f "$STATE"; exit 0; fi
 printf '%s' "$n" > "$STATE"
 
-# One word on purpose. The block text is injected into context on every hit, and
-# the protocol (next number only, EndAnswer to finish) belongs in the memory file,
-# not re-paid per paragraph.
-jq -nc '{decision:"block", reason:"Proceed"}'
+# "block" is the harness verb for refusing the STOP, not for rejecting the text,
+# so the reason has to say what to do next or it reads as "I am blocking you,
+# please proceed". Short on purpose: it is injected on every paragraph.
+jq -nc '{decision:"block", reason:"Turn not over. Next number, or [¤] alone on the last line to end."}'
