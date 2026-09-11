@@ -35,6 +35,14 @@ command -v jq >/dev/null 2>&1 || exit 0
 [ "$(jq -r '.stop_hook_active // false' <<<"$payload" 2>/dev/null)" = "true" ] && exit 0
 
 text=$(jq -r '.last_assistant_message // empty' <<<"$payload" 2>/dev/null | head -c 20000)
+
+# Paragraph gate on: an intermediate paragraph ends the MESSAGE, not the turn, so
+# "announced and stopped" cannot be judged until the EndAnswer sentinel arrives.
+# Only the final paragraph is a real stop. (Gate is default-off; see paragraph-gate.sh.)
+if [ -f "$(dirname "${BASH_SOURCE[0]}")/.paragraph-gate-on" ] || [ "${PARAGRAPH_GATE:-0}" = "1" ]; then
+  _last=$(printf '%s' "$text" | grep -vE '^[[:space:]]*$' | tail -1 | tr -d '[:space:]')
+  [ "$_last" = "EndAnswer" ] || exit 0
+fi
 [ -n "${text:-}" ] || exit 0
 
 # Fences and inline spans stripped: a quoted example of the offending line is
