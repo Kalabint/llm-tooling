@@ -86,5 +86,6 @@ printf '%s' "$n" > "$STATE"
 # /docs/en/hooks); anything else is ignored and the turn ends, which would silently
 # disable the gate. So the wire value stays "block" and the NAME of the event lives
 # in the reason, which is the string the user and the next turn actually read.
+# "Proceed" is his wording: the harness refuses the stop, the reason says carry on.
 # Short on purpose: it is injected on every paragraph.
-jq -nc '{decision:"block", reason:"GATE CHECK: turn not over. Next number, or [¤] alone on the last line to end."}'
+jq -nc '{decision:"block", reason:"Proceed: next number, or [¤] alone on the last line to end."}'
