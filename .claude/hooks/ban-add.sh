@@ -20,14 +20,9 @@ set -uo pipefail
 HOOKS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TSV="$HOOKS/userban.tsv"
 NEG="$HOOKS/ban-corpus-negatives.txt"
-# Repo to mirror bans into. Tries the current tree first so a rename does not
-# silently stop the mirroring, then the known checkout names.
-REPO="${BAN_REPO:-}"
-if [ -z "$REPO" ]; then
-  for d in "$HOME/llm-tooling" "$HOME/LLM-Tooling" "$HOME/ChatGPT-Primer"; do
-    [ -d "$d/.git" ] && { REPO="$d"; break; }
-  done
-fi
+# Repo to mirror bans into. BAN_REPO overrides it, which is the way to point
+# this at a renamed or relocated checkout.
+REPO="${BAN_REPO:-$HOME/llm-tooling}"
 
 pat=""; generalised=0
 if [ "${1:-}" = "-p" ]; then pat="$2"; generalised=1; shift 2; fi
