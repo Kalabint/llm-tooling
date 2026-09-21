@@ -31,3 +31,11 @@ Idempotent: it applies without reopening the file.
 # that rule must not swallow the replacement it rewrites to.
 Limits: the corridor is rebuilt every 250 m
 Limits: only 14 of 52 devices reported.
+# the answer-then-specifics form that replaces the hedged either-or opener
+# ("Both, and the cleaning is the larger half." > banned, 2026-09-21). A wider
+# version of that rule must not swallow the shape it rewrites to, nor a concrete
+# dependency stated mid-answer.
+Both: the branch holds the cleaned tree AND publish.sh.
+Both. The branch holds the cleaned tree and publish.sh.
+It depends on `course`, the field measured at p90 = 99-141 deg error.
+This depends on the host timezone, which I cannot read.
