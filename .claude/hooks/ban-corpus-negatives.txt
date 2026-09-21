@@ -26,3 +26,8 @@ committed to the repo, /tmp copy deleted
 # technical uses of reopen/without reopening — must never be banned (2026-09-11)
 The pool is not reopening the connection after a DB restart.
 Idempotent: it applies without reopening the file.
+# the bare-label form the user asked for in place of the announce preamble
+# ("The limitation worth stating" > banned, 2026-09-21). A later, wider version of
+# that rule must not swallow the replacement it rewrites to.
+Limits: the corridor is rebuilt every 250 m
+Limits: only 14 of 52 devices reported.
